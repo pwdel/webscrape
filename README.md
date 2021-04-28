@@ -127,11 +127,93 @@ As far as the actual python work and lifting, this could be built into the follo
 
 The process of Pre-processing, Preperation, and Wrangling is sort of like Extract, Transform and Load in the IT world of data warehousing. However instead of a data warehouse, we're just working with whatever database.
 
+## Building the Webscrape Algorithm and Layout
+
+### Project Structure
+
+From our project structure above:
+
+```
+└── data
+│	  ├──	init.py
+│	  ├──	raw_data
+│	      ├──	init.py
+│	      └── articlemodels.py
+│	  ├──	processed_data
+│	      ├──	init.py
+│	      └── vocabmodels.py
+│	  └──	user_input_data
+```
 
 
-#### Data Munging
+### Fundamentals of Webscraping
 
-This happens after data preperation and may include cleaning, enrichment, validation, and discovery.
+The code for how the physical web scraping part of this project can be accomplished has been more or less built out at [this Google Colab Notebook](https://colab.research.google.com/drive/1fuN-rt7wA4gavo-AdZR5Uzr6w41_2kEh#scrollTo=emOI5-9dtvwp).
+
+Essentially, the following is done:
+
+1. Perform a Search on a Given Term.
+2. Go through the URL's one by one and read the raw text. Put the raw text into the database. There are several ways to extract the raw text.
+3. Remove regex (this is a pre-processing routine).
+4. Put the fully cleaned raw text in a database for later usage.
+
+### Sponsor Search Capability
+
+Search can simply be a formfill, with some written tips on what kinds of topics to search for, and for what purpose.  Searches can be used to generate a library of Articles, automatically.
+
+Once a search is performed on a topic, the site can go through everything including, "pre-processing."  
+
+#### Post Search - Tokenization
+
+Once pre-processing is finished, the articles within a group of pre-processed articles can be, "tokenized" to create a vocabulary.  This vocabulary then shows up on a list for the sponsor/user to view.
+
+#### Post Tokenization - Knowledgebase Association
+
+A vocabulary can automatically be assigned a name, as well as a KnowledgeBase with a name, and the vocabulary can automatically show up within that new knowledgebase.
+
+The vocabulary can be combined with other vocabularies by adding them to the knowledgebase.
+
+#### Post KnowledgeBase Association - Article Generation
+
+The vocabulary can be used to generate an a long-form article, of pre-designated length, which becomes an, "autodoc."
+
+The process of creating the autodoc involves taking a given knowledgebase and using it to fine-tune the autodoc, and hitting, "generate."  Essentially, it's a user interface and user experience wrapper for the language model generation application.
+
+We can start out with a standard article length to generate, to ensure that articles don't become too long and overwhealm the system.
+
+### Raw Article Library Interface
+
+[Taking inspiration from this Dribble Design](https://dribbble.com/shots/5897384-Document-Management-System/attachments/5897384?mode=media) a stark document management system which includes a list of documents within a vocabulary, and a way to delete or add documents, or copy and paste sets of documents over to another vocabulary would likely be helpful.
+
+![Article Interface](/readme_img/article-interface.png)
+
+Having the ability to scan the original (perhaps both regex cleaned and non-regex cleaned to search for discrepencies) article may be helpful as well.
+
+### Adding Ad-Hoc Articles
+
+
+### Tagging
+
+
+## Storing Data
+
+### Calculating Data Usage
+
+### Building Out Data Models
+
+### Storing Raw Text from Search
+
+### Regex Remover & Storage
+
+### Tokenizer and Vocabulary Storage
+
+### Adding Tags
+
+
+## Sorting and KnowledgeBases
+
+### Adding Vocabularies to Knowledgebases
+
 
 
 # References
