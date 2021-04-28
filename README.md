@@ -105,18 +105,39 @@ As far as the actual python work and lifting, this could be built into the follo
 │ 	└──	js
 ```
 
-* tokenize.py
+* tokenize.py -
 * knowledgebasebuild.py
 * regexclean.py
 
-### Brief Term Definition
+### Brief Term Definitions - Features vs. Preparation vs Pre-processing
 
-* [Preprocessing vs. Munging](https://www.xenonstack.com/blog/data-preparation/)
+#### Pre-processing
 
-https://www.infoq.com/articles/ml-data-processing/
+* Dealing with missing data, noisy data or inconsistent data. Basically this deals with, "cleaning the data," so that we can start to analyze it in some form.
+* In the case of text analysis, this may involve removing common repeating words, removing punctuation, or a variety of other methods. The algorithms we are working with, such as BERT have their own embedded ways of masking words, so technically that would fall under pre-processing, but for our application we may call on BERT within a different function.
+
+#### Preperation
+
+* Data preperation happens after pre-processing.
+* This may involve additional cleaning missing or noisy data, tranformations, normalization, aggregation, and data reduction, basically scaling things to make it more processable.
+
+#### Wrangling
+
+* Data wrangling includes recalculating the data  for cross validation (for example normalizing numbers, scaling numbers, projecting matricies, removing outliers), and dividing the dataset up into training data and test data.
+
+The process of Pre-processing, Preperation, and Wrangling is sort of like Extract, Transform and Load in the IT world of data warehousing. However instead of a data warehouse, we're just working with whatever database.
+
+
+
+#### Data Munging
+
+This happens after data preperation and may include cleaning, enrichment, validation, and discovery.
+
 
 # References
 
+* [Data Processing](https://www.infoq.com/articles/ml-data-processing/)
+* [Preprocessing vs. Munging](https://www.xenonstack.com/blog/data-preparation/)
 * [Web Scraping Tutorial](https://colab.research.google.com/github/nestauk/im-tutorials/blob/3-ysi-tutorial/notebooks/Web-Scraping/Web%20Scraping%20Tutorial.ipynb#scrollTo=pM5mWsfhqDbT)
 * [Performing a Google Search in Python](https://www.geeksforgeeks.org/performing-google-search-using-python-code/)
 * [](https://colab.research.google.com/drive/1axiHVKtiWmqNXKo-r3MAWHxYA_k-spNC)
