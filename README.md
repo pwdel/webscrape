@@ -94,7 +94,7 @@ As far as the actual python work and lifting, this could be built into the follo
 └── src
 │	  ├── features
 │	    ├──	init.py
-│ 	  └──	tokenize.py
+│ 	  └──	articletokenize.py
 │	  ├── preperation
 │	    ├──	init.py
 │ 	  └──	knowledgebasebuild.py
@@ -138,6 +138,7 @@ From our project structure above:
 │	  ├──	init.py
 │	  ├──	raw_data
 │	      ├──	init.py
+│	      ├──	searchscrape.py
 │	      └── articlemodels.py
 │	  ├──	processed_data
 │	      ├──	init.py
