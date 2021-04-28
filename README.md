@@ -4,6 +4,8 @@
 
 # Creating a Folder Structure
 
+## Storing the Data and Raw Data
+
 Generally described, machine text generation is a series of mathematical transforms performed on words or parts of speech (groups of words) which have been assigned numbers or identifiers and whose order or the order of those numbers identified. The ability to generate new, open-ended text is loosely based upon, "vocabularies" which are essentially collections of words or tokens.
 
 There are many different types of transforms and ways of performing machine text generation depending upon the end result, but in the abstract a flow chart like the following examples is performed:
@@ -28,7 +30,47 @@ With that type of feature set, there is a need for different sets of raw data, w
 
 Hence, a relational database model comes to mind which could help manage all of this:
 
-![](/readme_img/knowledgebases.png)
+![](/readme_img/knowledgebases1.png)
+
+Expanding upon this, there are certain, "stops" within the, "Article -> Vocabulary -> Knowledgebase" Pipeline. Breaking it down:
+
+* Articles have, "raw text" which can be cleaned up and have regex expressions removed, turning them into, "regexremoved."
+* Vocabularies can basically be, "tokenized" versions of the, "regexremoved" data, essentially creating objects which are ready to add into, "knowledgebases."
+* Hence knowledgebases are simply collections of pre-tokenized, regex-cleaned raw text collected from articles.
+
+## Storing Machine Learning Models
+
+Whereas with GPT2 in a previous project, [SRCFlask](https://github.com/pwdel/srcflask), the GPT2 head model was invoked and "fine tuned," on a small set of text, predicting the next logical few tokens in a string based upon a search model, it is possible to actually encode text using BERT as a language Machine Learning model rather than GPT.  There are a variety language models, including ElMo, which is more open source but possibly less capable than BERT, which actually allow building out and customizing open-ended text generation based upon custom vocabularies.
+
+At some point, decisions may need to be made about where to store actual pre-built models, (e.g. trained models) in order to make the process of fine-tuning or invoking models much faster and less resource dependent. We will go through that in the future, as for now the purpose is to build out more of a web scrapting architecture which will enable future vocabulary generation.
+
+## Project Structure
+
+From the, "flask src" project, we had the overall project structure:
+
+```
+└── src
+│	├── features
+│	├── preperation
+│	├── preprocessing
+│	├── evaluation
+│	└──	js
+└── tests
+│	└──	unit_tests
+└── models
+│	├── seedmodels
+│	└──	retrainedmodels
+└── data
+│	├──	raw_data
+│	├──	processed_data
+│	└──	user_input_data
+└── pipeline
+│	└──	model_retraining_automation_scripts
+└── docs
+	├──	Documentation
+	└──	Notebooks
+```
+
 
 # References
 
