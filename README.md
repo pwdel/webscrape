@@ -127,11 +127,62 @@ As far as the actual python work and lifting, this could be built into the follo
 
 The process of Pre-processing, Preperation, and Wrangling is sort of like Extract, Transform and Load in the IT world of data warehousing. However instead of a data warehouse, we're just working with whatever database.
 
+## Building the Webscrape Algorithm and Layout
+
+### Project Structure
+
+From our project structure above:
+
+```
+└── data
+│	  ├──	init.py
+│	  ├──	raw_data
+│	      ├──	init.py
+│	      └── articlemodels.py
+│	  ├──	processed_data
+│	      ├──	init.py
+│	      └── vocabmodels.py
+│	  └──	user_input_data
+```
 
 
-#### Data Munging
+### Fundamentals of Webscraping
 
-This happens after data preperation and may include cleaning, enrichment, validation, and discovery.
+
+### Sponsor Search Capability
+
+
+### Raw Article Library Interface
+
+[Taking inspiration from this Dribble Design](https://dribbble.com/shots/5897384-Document-Management-System/attachments/5897384?mode=media) a stark document management system which includes a list of documents within a vocabulary, and a way to delete or add documents, or copy and paste sets of documents over to another vocabulary would likely be helpful.
+
+![Article Interface](/readme_img/article-interface.png)
+
+### Adding Ad-Hoc Articles
+
+
+### Tagging
+
+
+## Storing Data
+
+### Calculating Data Usage
+
+### Building Out Data Models
+
+### Storing Raw Text from Search
+
+### Regex Remover & Storage
+
+### Tokenizer and Vocabulary Storage
+
+### Adding Tags
+
+
+## Sorting and KnowledgeBases
+
+### Adding Vocabularies to Knowledgebases
+
 
 
 # References
