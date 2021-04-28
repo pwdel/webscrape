@@ -71,6 +71,49 @@ From the, "flask src" project, we had the overall project structure:
 	└──	Notebooks
 ```
 
+Looking at our above data, we can fairly naturally find where to put models which help build out the above relational database.
+
+```
+└── data
+│	  ├──	init.py
+│	├──	raw_data
+│	    ├──	init.py
+│	    └── articlemodels.py
+│	├──	processed_data
+│	    ├──	init.py
+│	    └── vocabmodels.py
+│	└──	user_input_data
+```
+
+* Articles are raw data, so all of the information contained in articlemodels.py has to do with raw text and regex-cleaned text, which for our purposes is raw data.
+* Vocabularies are processed, meaning tokenized, and no longer raw, so anything dealing with Vocabularies, as well as Knowledgebases and Holdings can go into this file.
+
+As far as the actual python work and lifting, this could be built into the following files:
+
+```
+└── src
+│	  ├── features
+│	    ├──	init.py
+│ 	  └──	tokenize.py
+│	  ├── preperation
+│	    ├──	init.py
+│ 	  └──	knowledgebasebuild.py
+│ 	├── preprocessing
+│	    ├──	init.py
+│ 	  └──	regexclean.py
+│	  ├── evaluation
+│ 	└──	js
+```
+
+* tokenize.py
+* knowledgebasebuild.py
+* regexclean.py
+
+### Brief Term Definition
+
+* [Preprocessing vs. Munging](https://www.xenonstack.com/blog/data-preparation/)
+
+https://www.infoq.com/articles/ml-data-processing/
 
 # References
 
