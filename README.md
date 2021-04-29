@@ -258,6 +258,148 @@ def scrapeurls(search_results):
 ```
 Hence our regex function will do the heavy lifting further down the line.
 
+##### Dependency Conflict - BeautifulSoup
+
+While the most recent version of BeautifulSoup was 4.9.3, googlesearch had a conflicting dependency, based upon BeautifulSoup 4.9.1, so requirements.txt was reverted back to 4.9.1.
+
+#### Testing Functionality in Flask Shell
+
+Through running the flask shell, there were some problems identified:
+
+* Need to import [requests](https://pypi.org/project/requests/) using version compatible with Google search to prevent depdendency conflict.
+
+Running through an initial search of 100 url's, the inquiry took about 2m30s.  
+
+There was an error or exception based upon an inability to read a certificate, which perhaps might be one of many exceptions we might find while scraping URLs.
+
+```
+aise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='www.photonis.com', port=443): Max retries exceeded with url: /products/mm-wave-traveling-wave-tubes (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1125)')))
+```
+Looking at, "len(textlist)" we still appear to have generated 92 results. What is likely needed is some kind of set of exceptions for errors, or simply a, "try" function which replaces a result with a null string for that particular column, or if we would like to structure it even further, a string which identifies the error found for that particular URL.
+
+##### Dealing with Response Errors
+
+try:
+
+##### Thoughts on User Interface for Results
+
+Users might respond well to the amount of time range it takes to generate a particular vocabulary.  If we can provide an estimate, saying that a set of 100 blogs will take 2 to 5 minutes to generate a results (really we need to take into account our entire timeline, not just the raw text collection), that might improve the user experience, giving the user a general idea of what they should expect in creating new vocabularies for various types of articles.
+
+#### Regex Removal
+
+Above in this post, the assumption was that raw data would be important to store - but realistically, a lot of the raw data just includes the character, '\n' - which is basically a newline character.
+
+Within the file: src / preprocessing / regexclean.py, we can have the following:
+
+```
+import re
+
+# compile int a regular expression object given instructions
+# remove first layer of tags, characters
+htmltags_re = re.compile(r'<[^>]+>')
+# compile and remove newline tags
+htmltags_nre = re.compile(r'\n')
+# empty text tags removed list
+text_tagsremovedlist = []
+
+# removetags function
+# input a list of scraped websites, output text with regex removed
+def remove_tags(titlelist,textlist):
+
+    # do this for all items in text list
+
+    for counter in range(0,len(textlist)):
+        # remove characters for a particular textlist item
+        text_htmltags_removed = htmltags_re.sub('', textlist[counter])
+        # remove newline function on that list item
+        # append list item to text_ntags_removed list
+        text_tagsremovedlist.append(htmltags_nre.sub('', text_htmltags_removed))
+
+    return(text_tagsremovedlist)
+```
+[re](https://docs.python.org/3.8/library/re.html) is a python builtin module.
+
+##### Testing Out In Flask Shell
+
+With the above function, we get:
+
+"TypeError: expected string or bytes-like object"
+
+This is because type(textlist[0]) results in a <class 'bs4.element.ResultSet'> rather than a string.  However converting the result can be done simply with, "type(str(textlist[0]))"
+
+Once this is cleared, there is still the problem of the text not being parsed properly, particularly with our very first title, wikipedia.  There are tons of irregular expressions and newlines remaining.
+
+The following regular expression is suggested for wikipedia pages from [this stackoverflow conversation](https://stackoverflow.com/questions/4929082/python-regular-expression-with-wiki-text).
+
+```
+r'\[\[(?:[^|\]]*\|)?([^\]]+)\]\]'
+```
+Regex expressions within web scraping get incredibly complicated, it can be a, "data mining" exercise which as much data mining and detection of good quality data as there are sources of potential data to draw from.
+
+To start off with, I have put some example regex files with extremely long, interspersed results within [this folder here, example_regexfiles](/example_regexfiles).
+
+Some articles on the topic:
+
+* [Text Data Cleaning Steps for Python](https://www.analyticsvidhya.com/blog/2014/11/text-data-cleaning-steps-python/)
+* [NTALK Library for NLP Data Cleaning](https://www.analyticsvidhya.com/blog/2020/11/text-cleaning-nltk-library/)
+* [HTML Data Cleaning for NLP](https://morioh.com/p/f6d2d03e6884)
+* [Using NLTK](https://www.nltk.org/book/ch03.html)
+
+So to help clean the text we could use the module, [nltk](https://pypi.org/project/nltk/) (the natural language toolkit) however this should not be confused with [ntlk](https://pypi.org/project/ntlk/) which is an empty package created by a security researcher to prevent typosquatting, since nltk is written so similarly.
+
+##### Using NLTK
+
+At this point it would be important to understand what GPT-2 needs in terms of inputs to be able to generate actual sentences which include a particular type of language.
+
+According to this article [Conditional Text Generation by Fine-Tuning GPT2](https://towardsdatascience.com/conditional-text-generation-by-fine-tuning-gpt-2-11c1a9fc639d), we see that basically a few keywords are requested from the text in order to generate some kind of starter text from GPT2.
+
+This [Colab Notebook Dealing with GPT-2 Fine-Tuning w/ Hugging Face & PyTorch](https://colab.research.google.com/drive/1g-BcoYXy-xI4yLf2jRxnaKxgM_AVrVqQ) which was originally published by [Rey Farhan](https://reyfarhan.com/posts/easy-gpt2-finetuning-huggingface/)
+
+Within this above blog post, the author does the following:
+
+1. Uses GPT2 with bos_token and eos_token being the startoftext and endoftext.
+
+```
+tokenizer = GPT2Tokenizer.from_pretrained('gpt2', bos_token='<|startoftext|>', eos_token='<|endoftext|>', pad_token='<|pad|>') #gpt2-medium
+```
+Note - there is a 768 embedding size limit for the small GPT2 model.
+
+2. Dataset was trained with, "bios," which was literally just a bunch of written paragraph bios about various singers.  This data was fairly cleaned, presumably perfectly cleaned without HTML tags or expressions, and in sentance form to start off with.
+
+```
+dataset = GPT2Dataset(bios, tokenizer, max_length=768)
+```
+3. This creates a training dataset:
+
+```
+train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+```
+4. Which gets put into a training dataloader.
+
+```
+train_dataloader = DataLoader(
+            train_dataset,  # The training samples.
+            sampler = RandomSampler(train_dataset), # Select batches randomly
+            batch_size = batch_size # Trains with this batch size.
+        )
+```
+5. Which ultimately  get enumerated out during the training process to create a model.
+
+```
+for step, batch in enumerate(train_dataloader):
+```
+6. This model can be used to print out generated text.
+
+Basically, using NLTK will not be helpful unless it can really clean the text and make it into something absolutely readable and clean from the get-go.
+
+From this [Stackoverflow Answer](https://stackoverflow.com/questions/26002076/python-nltk-clean-html-not-implemented) it appears that NLTK is no longer used for HTML cleaning as BeautifulSoup does a better job.
+
+#### Further Pre-Built Regex Removal Functions
+
+* [](https://gist.github.com/MrEliptik/b3f16179aa2f530781ef8ca9a16499af)
+* [Cleantext Github](https://github.com/jfilter/clean-text)
+* [Cleantext Pypi](https://pypi.org/project/clean-text/)
 
 #### Post Search - Tokenization
 
@@ -314,6 +456,10 @@ Having the ability to scan the original (perhaps both regex cleaned and non-rege
 
 # References
 
+* [Text Data Cleaning Steps for Python](https://www.analyticsvidhya.com/blog/2014/11/text-data-cleaning-steps-python/)
+* [NTALK Library for NLP Data Cleaning](https://www.analyticsvidhya.com/blog/2020/11/text-cleaning-nltk-library/)
+* [HTML Data Cleaning for NLP](https://morioh.com/p/f6d2d03e6884)
+* [Using NLTK](https://www.nltk.org/book/ch03.html)
 * [Advanced Web Scraping](https://www.pluralsight.com/guides/advanced-web-scraping-tactics-python-playbook)
 * [Data Processing](https://www.infoq.com/articles/ml-data-processing/)
 * [Preprocessing vs. Munging](https://www.xenonstack.com/blog/data-preparation/)

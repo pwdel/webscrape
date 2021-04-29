@@ -3,6 +3,8 @@
 from googlesearch import search
 # beautifulsoup
 from bs4 import BeautifulSoup as bs
+# requests
+import requests
 
 
 # define search functionality for application
@@ -23,8 +25,8 @@ def scrapeurls(search_results):
     textlist = []
     titlelist = []
 
-    # for each search result
-    for counter in range(0,search_results):
+    # for each search result through the length of search_results
+    for counter in range(0,len(search_results)):
         # grab each URL
         url = search_results[counter]
         # get the url response
