@@ -13,3 +13,5 @@ WTForms-SQLAlchemy==0.2
 Flask-Principal==0.4.0
 gast==0.3.3
 transformers==4.5.1
+googlesearch-python==2020.0.2
+beautifulsoup4=4.9.3 
