@@ -401,6 +401,54 @@ From this [Stackoverflow Answer](https://stackoverflow.com/questions/26002076/py
 * [Cleantext Github](https://github.com/jfilter/clean-text)
 * [Cleantext Pypi](https://pypi.org/project/clean-text/)
 
+#### Removing Excess Stuff with clean-text
+
+Utilizing the clean-text functionality:
+
+```
+def clean_text(text_tagsremovedlist):
+
+    cleanedtags = []
+
+    for counter in range(0,len(text_tagsremovedlist)):
+        cleanedtags.append(
+        clean(
+            text_tagsremovedlist[counter],  # iterate over list
+            fix_unicode=True,               # fix various unicode errors
+            to_ascii=True,                  # transliterate to closest ASCII representation
+            lower=True,                     # lowercase text
+            no_line_breaks=False,           # fully strip line breaks as opposed to only normalizing them
+            no_urls=False,                  # replace all URLs with a special token
+            no_emails=False,                # replace all email addresses with a special token
+            no_phone_numbers=False,         # replace all phone numbers with a special token
+            no_numbers=False,               # replace all numbers with a special token
+            no_digits=False,                # replace all digits with a special token
+            no_currency_symbols=False,      # replace all currency symbols with a special token
+            no_punct=False,                 # remove punctuations
+            replace_with_punct="",          # instead of removing punctuations you may replace them
+            replace_with_url="<URL>",
+            replace_with_email="<EMAIL>",
+            replace_with_phone_number="<PHONE>",
+            replace_with_number="<NUMBER>",
+            replace_with_digit="0",
+            replace_with_currency_symbol="<CUR>",
+            lang="en"                        # set to 'de' for German special handling
+            )
+            )
+
+    return()
+```
+
+Outputs: "Since the GPL-licensed package `unidecode` is not installed, using Python's `unicodedata` package which yields worse results."
+
+[Unidecode](https://pypi.org/project/Unidecode/)
+
+#### Going Back and Searching Only Visitble Text from WebPages
+
+* [BeautifulSoup - Grab Visible Webpage Text](https://stackoverflow.com/questions/1936466/beautifulsoup-grab-visible-webpage-text)
+
+Basically, grabbing the visible text of a page has much better results. Of course the results are still not fully consistent, hinting at the need for a fully-customizeable vocabulary builder and editor with the capability for an editor or vocabulary builder role to be able to go in and eliminate parts of input articles, or even eliminate entire articles based upon instructions from a sponsor, to help create higher quality articles.
+
 #### Post Search - Tokenization
 
 Once pre-processing is finished, the articles within a group of pre-processed articles can be, "tokenized" to create a vocabulary.  This vocabulary then shows up on a list for the sponsor/user to view.
