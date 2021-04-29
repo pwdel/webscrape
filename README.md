@@ -138,7 +138,6 @@ From our project structure above:
 │	  ├──	init.py
 │	  ├──	raw_data
 │	      ├──	init.py
-│	      ├──	searchscrape.py
 │	      └── articlemodels.py
 │	  ├──	processed_data
 │	      ├──	init.py
@@ -160,9 +159,105 @@ Essentially, the following is done:
 
 ### Sponsor Search Capability
 
-Search can simply be a formfill, with some written tips on what kinds of topics to search for, and for what purpose.  Searches can be used to generate a library of Articles, automatically.
+Search can simply be a form fill, with some written tips on what kinds of topics to search for, and for what purpose.  Searches can be used to generate a library of Articles, automatically.
 
 Once a search is performed on a topic, the site can go through everything including, "pre-processing."  
+
+#### Project Structure for Search and Scrape
+
+Search and Scrape functionality can be stored under src >> datacollect >> searchscrape.py, since it is inherently a server-side, static type of functionality.
+
+```
+└── src
+│	  ├── datacollect
+│	    ├──	init.py
+│ 	  └──	searchscrape.py
+│	  ├── features
+│	    ├──	init.py
+│ 	  └──	articletokenize.py
+│	  ├── preperation
+│	    ├──	init.py
+│ 	  └──	knowledgebasebuild.py
+│ 	├── preprocessing
+│	    ├──	init.py
+│ 	  └──	regexclean.py
+│	  ├── evaluation
+│ 	└──	js
+```
+#### searchscrape.py
+
+The [Pypi for Googlesearch](https://pypi.org/project/googlesearch-python/) at the time of authoring shows version 2020.0.2, which needs to be added to our requirements.txt.
+
+Then...
+
+```
+# import the dependencies
+from googlesearch import search
+
+# define search functionality for application
+def searchterms(search_term):
+    # search the given input
+    search_output = search(search_term, num_results=100)
+    # output as a list of URLs
+    # the first item search_results[0] is the Google Search string used
+    search_results = search_output[1:(num_results+1)]
+    # return a list of all search results
+    return(search_results)
+```
+For the actual scraping function, we need some different dependencies.
+
+The [Pypi for beautifulsoup at the time of authoring](https://pypi.org/project/beautifulsoup4/) shows beautifulsoup4=4.9.3.
+
+For finding, "any" content from any page automatically, this may be a bit trickier because pages are not necessarily structured the same way.
+
+```
+content = url_soup.find('div', {'class': 'content-area'})
+```
+May work better than:
+
+```
+content = url_soup.body
+```
+
+if the page in question actually has a div equivalent to 'content-area', otherwise the 'body' extraction technique may be more universal.
+
+There are more challenges dealing with javascript heavy content, honeypots and other challenges to get more advanced which are described here:
+
+* [Advanced Web Scraping](https://www.pluralsight.com/guides/advanced-web-scraping-tactics-python-playbook)
+
+So in order to just bulk download all of the text, what we're going to go with for now is:
+
+```
+text = url_soup.find_all(text=True)
+```
+Meaning our finalized function will be:
+
+```
+def scrapeurls(search_results):
+    # index search results
+
+    # start empty list of titles and texts
+    textlist = []
+    titlelist = []
+
+    # for each search result
+    for counter in range(0,search_results):
+        # grab each URL
+        url = search_results[counter]
+        # get the url response
+        url_response = requests.get(url)
+        # return beautifulsoup html parser from response
+        url_soup = bs(url_response.text, 'html.parser')
+        # Title of the parsed page, append to list
+        titlelist.append(url_soup.title)
+        # find all text, append to list
+        textlist.append(url_soup.find_all(text=True))
+
+    # return the title and text
+    return(titlelist,textlist)
+```
+Hence our regex function will do the heavy lifting further down the line.
+
 
 #### Post Search - Tokenization
 
@@ -219,6 +314,7 @@ Having the ability to scan the original (perhaps both regex cleaned and non-rege
 
 # References
 
+* [Advanced Web Scraping](https://www.pluralsight.com/guides/advanced-web-scraping-tactics-python-playbook)
 * [Data Processing](https://www.infoq.com/articles/ml-data-processing/)
 * [Preprocessing vs. Munging](https://www.xenonstack.com/blog/data-preparation/)
 * [Web Scraping Tutorial](https://colab.research.google.com/github/nestauk/im-tutorials/blob/3-ysi-tutorial/notebooks/Web-Scraping/Web%20Scraping%20Tutorial.ipynb#scrollTo=pM5mWsfhqDbT)
