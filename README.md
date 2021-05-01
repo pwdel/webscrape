@@ -483,6 +483,45 @@ Having the ability to scan the original (perhaps both regex cleaned and non-rege
 
 ## Storing Data
 
+### articlemodels.py
+
+We create a class to store the articlemodels as discussed above.
+
+Within the articlemodels.py in order to work, we import:
+
+```
+"""Database models."""
+from project import db
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
+from sqlalchemy import Integer, ForeignKey, String, Column
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+```
+For the actual model itself, there should be limitations on the amount of characters which can be held in, "raw text" and "regex removed" as there is an actual input limit to GPT2.
+
+```
+rawtext = db.Column(
+		db.String(1000),
+		unique=False,
+		nullable=True
+)
+regexremoved = db.Column(
+		db.String(1000),
+		unique=False,
+		nullable=True
+)
+```
+The backreference should be many-to-many, relating to vocabularies via collections
+
+```
+"""backreferences Vocabulary class on collections table"""
+vocabularies = relationship(
+		'Collection',
+		back_populates='article'
+		)
+```
+
 ### Calculating Data Usage
 
 ### Building Out Data Models
