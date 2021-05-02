@@ -77,12 +77,12 @@ class Revision(db.Model):
     )
 
     """backreferences to user and document tables"""
-    document = db.relationship(
-        'Document',
-        back_populates='autodocs'
+    knowledgebase document = db.relationship(
+        'Knowledgebase Document',
+        back_populates='vocabularies autodocs'
         )
 
-    autodoc = db.relationship(
-        'Autodoc',
-        back_populates='documents'
+    vocabulary = db.relationship(
+        'Vocabulary',
+        back_populates='knowledgebases'
         )

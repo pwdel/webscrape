@@ -141,7 +141,8 @@ From our project structure above:
 │	      └── articlemodels.py
 │	  ├──	processed_data
 │	      ├──	init.py
-│	      └── vocabmodels.py
+│	      ├── vocabmodels.py
+│	      └── knowledgebasemodels.py
 │	  └──	user_input_data
 ```
 
@@ -521,6 +522,13 @@ vocabularies = relationship(
 		back_populates='article'
 		)
 ```
+### vocabmodels.py
+
+
+### knowledgemodels.py
+
+
+
 
 ### Calculating Data Usage
 
