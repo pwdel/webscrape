@@ -44,13 +44,13 @@ class Revision(db.Model):
     __tablename__ = 'revisions'
 
     id = db.Column(
-        db.Integer, 
+        db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
     document_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('documents.id'),
         primary_key=True,
         unique=False,
@@ -58,20 +58,20 @@ class Revision(db.Model):
     )
 
     autodoc_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('autodocs.id'),
         primary_key=True,
         unique=False,
         nullable=True
     )
 
-    """backreferences to user and document tables"""
+    """backreferences to autodoc and document tables"""
     document = db.relationship(
-        'Document', 
+        'Document',
         back_populates='autodocs'
         )
 
     autodoc = db.relationship(
-        'Autodoc', 
+        'Autodoc',
         back_populates='documents'
         )
