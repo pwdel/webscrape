@@ -76,10 +76,10 @@ class Revision(db.Model):
         nullable=True
     )
 
-    """backreferences to user and document tables"""
-    knowledgebase document = db.relationship(
-        'Knowledgebase Document',
-        back_populates='vocabularies autodocs'
+    """backreferences to knowledgebase and vocabulary tables"""
+    knowledgebase = db.relationship(
+        'Knowledgebase',
+        back_populates='vocabularies'
         )
 
     vocabulary = db.relationship(
