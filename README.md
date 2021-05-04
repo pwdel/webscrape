@@ -444,7 +444,7 @@ Outputs: "Since the GPL-licensed package `unidecode` is not installed, using Pyt
 
 [Unidecode](https://pypi.org/project/Unidecode/)
 
-#### Going Back and Searching Only Visitble Text from WebPages
+#### Going Back and Searching Only Visible Text from WebPages
 
 * [BeautifulSoup - Grab Visible Webpage Text](https://stackoverflow.com/questions/1936466/beautifulsoup-grab-visible-webpage-text)
 
@@ -524,10 +524,289 @@ vocabularies = relationship(
 ```
 ### vocabmodels.py
 
+The same techniques as above are used to create the models, and an association table.
 
 ### knowledgemodels.py
 
+The same techniques as above are used to create the models, and an association table.
 
+Note that a backreference must also be added to the "User" class to link everyhthing together:
+
+```
+"""backreferences User class on holdings table"""
+knowledgebases = relationship(
+		'Holding',
+		back_populates='user'
+		)
+```
+### Adding Models to App Registration
+
+Under the app context within init.py, import via:
+
+```
+# import article models - Article and Collection
+from project.static.data.rawdata import articlemodels
+# import vocab models - Vocabulary and Glossary
+from project.static.data.processeddata import vocabmodels
+# import knowledgebase models - Knowledgebase and Holding
+from project.static.data.processeddata import knowledgebasemodels
+
+```
+Performing the above gives a circular import error:
+
+```
+flask  | ImportError: cannot import name 'Article' from partially initialized module 'project.static.data.rawdata.articlemodels' (most likely due to a circular import) (/usr/src/theapp/project/static/data/rawdata/articlemodels.py)
+flask exited with code 1
+```
+This was evidently from importing other models (classes) within each model file - for example, importing Vocabulary within the articlemodels.py file, which may not be necessary, but creates a circular import loop.  It appears that all models are imported into the application as a whole in parallel, and so there is no need to re-import them in to each other's model file.
+
+#### Multiple Classes found Path for Revision Error
+
+```
+flask  |   File "manage.py", line 50, in <module>
+
+...
+
+flask  | sqlalchemy.exc.InvalidRequestError: Multiple classes found for path "Revision" in the registry of this declarative base. Please use a fully module-qualified path.
+
+```
+
+This was because we had incorrectly named our Glossary class, "Revision" from a copy and paste error. Fixing it yields:
+
+```
+"""Association Object - Knowledgebase Glossary(glossaries) of Vocabularies"""
+class Glossary(db.Model):
+    """Model for which knowledgebase retains which vocabularies"""
+    """Associate database."""
+    __tablename__ = 'glossaries'
+```
+
+#### Knowledgebase and Collection Relationship
+
+```
+flask  | sqlalchemy.exc.InvalidRequestError: When initializing mapper mapped class Collection->collections, expression 'Knowledgebase' failed to locate a name ('Knowledgebase'). If this is a class name, consider adding this relationship() to the <class 'project.static.data.rawdata.articlemodels.Collection'> class after both dependent classes have been defined.
+```
+Basically, this was because the backreferences to articles and vocabularies were wrong on the collections tables.
+
+```
+"""backreferences to article and vocabulary tables"""
+vocabulary = db.relationship(
+		'Vocabulary',
+		back_populates='articles'
+		)
+
+article = db.relationship(
+		'Article',
+		back_populates='vocabularies'
+		)
+```
+
+#### Vocabulary Registration
+
+```
+flask  | sqlalchemy.exc.InvalidRequestError: Multiple classes found for path "Vocabulary" in the registry of this declarative base. Please use a fully module-qualified path.
+```
+
+This may have been from the Article class, where I had placed a back-population to 'vocabulary' rather than, 'vocabularies,' the table.
+
+```
+"""backreferences Article class on collections table"""
+articles = relationship(
+		'Collection',
+		back_populates='vocabularies'
+		)
+```
+Changing this did nothing.
+
+The reason actually appears to be that we do have two Vocabulary classes built, in both, "knowledgebasemodels.py" as well as, "vocabmodels.py" - the knowledgebasemodels.py class should have been the, 'Knowledgebase' class.
+
+Once this was corrected, the error cleared.
+
+#### class Collection has no property 'vocabularies'
+
+```
+flask  | sqlalchemy.exc.InvalidRequestError: Mapper 'mapped class Collection->collections' has no property 'vocabularies'
+```
+
+##### Backreferences on an Association Table
+
+The proper way to do backrferences on an association table is as follows:
+
+```
+"""backreferences to itemA and itemB tables"""
+itemA = db.relationship(
+		'ItemA',
+		back_populates='itemBs'
+		)
+
+itemB = db.relationship(
+		'ItemB',
+		back_populates='itemAs'
+		)
+```
+What's happening above is that the association table is creating a new object itemA which does:
+
+* calls on already existing Class ItemA, backpopulating to already existing table itemBs
+
+...and the same for a new object itemB, thereby pointing to both tables and backpopulating to each other.
+
+In the above case, there is no property, "vocabularies" because we have not imported the module 'vocabmodels.py', which we can't because it creates a circular dependency.  The solution is to initiate each model in order within the init file, working, "down the tree" in a way that allows each subsequent Class to be imported after a given model has already been started/initiated within the main __init__.py file.
+
+![](/readme_img/initializationorder.png)
+
+Therefore within __init__.py, the initialization order should go:
+
+```
+# import users and documents model class
+# initialize in order to prevent circular dependency
+from . import models
+# import autodocs and revisions model class
+from project.static.data.processeddata import autodocsmodels
+# import knowledgebase models - Knowledgebase and Holding
+from project.static.data.processeddata import knowledgebasemodels
+# import vocab models - Vocabulary and Glossary
+from project.static.data.processeddata import vocabmodels
+# import article models - Article and Collection
+from project.static.data.rawdata import articlemodels
+```
+
+And then, we shouldn't have to import anything, as everything is being created and built in order within the database.
+
+##### Backreferences on an Target Table
+
+So tarting out with knowledgebases, we get an error:
+
+```
+flask  | sqlalchemy.exc.InvalidRequestError: Mapper 'mapped class Knowledgebase->knowledgebases' has no property 'users'
+```
+
+This appears to be because, the proper way to set up a many-to-many backreference on a non-associaton table Class on a target table (e.g. association table relation pointing *to* the table) is as follows:
+
+```
+"""backreferences User class on Association Class"""
+tableFreferences = relationship(
+		'AssociationClass',
+		back_populates='objectD'
+		)
+```
+* The above backreference takes place within a Class for a table for, "objectD," basically taking place within the "ObjectD" Class.
+* In the above, "tableFreferences" refers to tableF, which is the, "other" table on the opposite side of the AssociationClass table.
+* AssociationClass is the name of the AssociationClass for the association table.
+* objectD is backpopulated to, since it is the target object/table.
+
+For our users class, this looked like the following:
+
+```
+"""backreferences User class on retentions table"""
+documents = relationship(
+		'Retention',
+		back_populates='user'
+		)
+```
+
+There should be two of these references for each of the following tables:
+
+* users, which is pointed to by Holdings and Retentions
+* documents which is poitned to by Retentions and Revisions
+* knowledgebases which is pointed to by Holdings and Glossaries
+* vocabuliaries which is pointed to by Glossaries and Collections
+
+
+```
+"""backreferences Knowledgbase class on glossaries table"""
+vocabularies = relationship(
+		'Glossary',
+		back_populates='knowledgebase'
+		)
+
+"""backreferences Knowledgbase class on holdings table"""
+users = relationship(
+		'Holding',
+		back_populates='knowledgebase'
+		)
+
+```
+Moving down the line, different errors can be corrected to perfect that database relationships using the above standard naming scheme.  The main important standard is to udnerstand if you are using backreferences on an associaton table or target table.
+
+Once all of the proper relationships have been built, the table should fully work.
+
+#### Checking in Postgres Shell
+
+All of the expected relations are present within postgres.
+
+```
+List of relations
+Schema |      Name      | Type  |      Owner       
+--------+----------------+-------+------------------
+public | articles       | table | userlevels_flask
+public | autodocs       | table | userlevels_flask
+public | collections    | table | userlevels_flask
+public | documents      | table | userlevels_flask
+public | glossaries     | table | userlevels_flask
+public | holdings       | table | userlevels_flask
+public | knowledgebases | table | userlevels_flask
+public | retentions     | table | userlevels_flask
+public | revisions      | table | userlevels_flask
+public | users          | table | userlevels_flask
+public | vocabularies   | table | userlevels_flask
+```
+Investigating the new relationship tables:
+
+```
+articles
+
+id | articlename | tags | originalurl | rawtext | regexremoved | timescraped | timepublished | created_on
+----+-------------+------+-------------+---------+--------------+-------------+---------------+------------
+
+collections
+
+id | vocabulary_id | article_id
+----+---------------+------------
+
+glossaries
+
+id | knowledgebase_id | vocabulary_id
+----+------------------+---------------
+
+holdings
+
+id | knowledgebase_id | user_id
+----+------------------+---------
+
+knowledgebases
+
+id | knowledgebasename | tags
+----+-------------------+------
+
+vocabularies
+
+id | vocabularyname | tags | tokenizedwords | created_on
+----+----------------+------+----------------+------------
+
+```
+The above tables all have the expected columns.
+
+
+### Adding to Environment to Access in Shell
+
+Adding to the shell context processor, which originally had:
+
+```
+# python shell context processor
+@app.shell_context_processor
+def make_shell_context():
+    return {'db': db, 'User': User, 'Document': Document, 'Retention': Retention, 'Autodoc': Autodoc,'Revision': Revision}
+
+```
+We transform this into:
+
+```
+# python shell context processor
+@app.shell_context_processor
+def make_shell_context():
+    return {'db': db, 'User': User, 'Document': Document, 'Retention': Retention, 'Autodoc': Autodoc,'Revision': Revision,'Holding': Holding,'Knowledgebase': Knowledgebase,'Glossary':Glossary,'Vocabulary':Vocabulary,'Collection':Collection,'Article':Article}
+
+```
 
 
 ### Calculating Data Usage

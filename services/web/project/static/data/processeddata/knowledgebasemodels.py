@@ -6,10 +6,9 @@ from sqlalchemy import Integer, ForeignKey, String, Column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 """Import other Models"""
-from project.static.data.processeddatata.vocabmodels import Vocabulary, Glossary
 
 """Knowledgebase Object"""
-class Vocabulary(db.Model):
+class Knowledgebase(db.Model):
     """Knowledgebase model."""
     """Describes table which includes knowledgebase, which are folders of vocabularies."""
 
@@ -36,7 +35,7 @@ class Vocabulary(db.Model):
         )
 
     """backreferences User class on holdings table"""
-    user = relationship(
+    users = relationship(
         'Holding',
         back_populates='knowledgebase'
         )

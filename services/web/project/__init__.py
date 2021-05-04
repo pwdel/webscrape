@@ -86,16 +86,24 @@ def create_app():
         app.register_blueprint(routes.admin_bp)
 
         # import users and documents model class
+        # initialize in order to prevent circular dependency
         from . import models
         # import autodocs and revisions model class
         from project.static.data.processeddata import autodocsmodels
+        # import knowledgebase models - Knowledgebase and Holding
+        from project.static.data.processeddata import knowledgebasemodels
+        # import vocab models - Vocabulary and Glossary
+        from project.static.data.processeddata import vocabmodels
+        # import article models - Article and Collection
+        from project.static.data.rawdata import articlemodels
+
 
         # Create Database Models
         db.create_all()
 
         # Compile static assets
         compile_static_assets(assets)
-      
+
     return app
 
 # Physically create the app now
@@ -143,7 +151,7 @@ def on_identity_loaded(sender, identity):
 
         # this is set up in such a way that multiple needs can be added to the same user
         needs = []
-        
+
         # append approved or notapproved roles depending upon status
         # approved status role - pending and rejected goes to notapproved
         if current_user_status == 'approved':
@@ -209,9 +217,8 @@ from project.static.data.processeddata.autodocsmodels import Autodoc, Revision
 # python shell context processor
 @app.shell_context_processor
 def make_shell_context():
-    return {'db': db, 'User': User, 'Document': Document, 'Retention': Retention, 'Autodoc': Autodoc,'Revision': Revision}
-
-# Apply Content Security Policy to All 
+    return {'db': db, 'User': User, 'Document': Document, 'Retention': Retention, 'Autodoc': Autodoc,'Revision': Revision,'Holding': Holding,'Knowledgebase': Knowledgebase,'Glossary':Glossary,'Vocabulary':Vocabulary,'Collection':Collection,'Article':Article}
+# Apply Content Security Policy to All
 @app.after_request
 def add_security_headers(resp):
     resp.headers['Content-Security-Policy']='default-src \'self\''

@@ -38,7 +38,7 @@ class User(db.Model):
         db.String(40),
         unique=False,
         nullable=True
-    ) 
+    )
     email = db.Column(
         db.String(40),
         unique=True,
@@ -69,11 +69,18 @@ class User(db.Model):
         nullable=True
     )
 
-    """backreferences User class on retentions table"""    
+    """backreferences User class on retentions table"""
     documents = relationship(
         'Retention',
         back_populates='user'
         )
+
+    """backreferences User class on holdings table"""
+    knowledgebases = relationship(
+        'Holding',
+        back_populates='user'
+        )
+
 
     """UserMixin requirements from flask-login"""
     @property
@@ -152,13 +159,13 @@ class Retention(db.Model):
     __tablename__ = 'retentions'
 
     id = db.Column(
-        db.Integer, 
+        db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
     sponsor_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('users.id'),
         primary_key=True,
         unique=False,
@@ -166,13 +173,13 @@ class Retention(db.Model):
     )
 
     editor_id = db.Column(
-        db.Integer, 
+        db.Integer,
         unique=False,
         nullable=True
     )
 
     document_id = db.Column(
-        db.Integer, 
+        db.Integer,
         db.ForeignKey('documents.id'),
         primary_key=True,
         unique=False,
@@ -181,11 +188,11 @@ class Retention(db.Model):
 
     """backreferences to user and document tables"""
     user = db.relationship(
-        'User', 
+        'User',
         back_populates='documents'
         )
 
     document = db.relationship(
-        'Document', 
+        'Document',
         back_populates='users'
         )
