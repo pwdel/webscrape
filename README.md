@@ -478,9 +478,11 @@ Having the ability to scan the original (perhaps both regex cleaned and non-rege
 
 ### Adding Ad-Hoc Articles
 
+There should also be functionality to add ad-hoc articles to an article collection, basically adding in URL's one by one through a form rather than through a search.
 
 ### Tagging
 
+There should also be, "tagging" capability for later perpendicular search and retrieval.
 
 ## Storing Data
 
@@ -808,10 +810,62 @@ def make_shell_context():
 
 ```
 
+## Building Out User Functionality
 
-### Calculating Data Usage
+### Overall Functionality Review
 
-### Building Out Data Models
+With the database ready to go, now it's time to build out user functionality.
+
+Within the repo [userlevelmodelsflask](https://github.com/pwdel/userlevelmodelsflask#creating-the-forms) Balsamiq was used to model out different pages and show how functionality would look.
+
+Fundamentally, it would be best to keep the interface and codebase as simple as possible.  To start off with, the Sponsor Dashboard can link off to a couple different interfaces:
+
+* Knowledgebase Generator
+* Autodoc Generator
+
+The knowledgebase generator is basically a generator of a base of knowledge from which autodocs can be created.  This is knowledge a user, "puts into a computer" to help generate future articles.
+
+An autodoc generator actually physically generates articles based upon pre-created knowledgebases.
+
+Part of the purpose of this bifurcation is to help teach users that there is a need to use quality knowledge when building an Autodoc, you can't necessarily just say, "do it," and expect quality output, there is some layering of collection and tagging that has to happen to meet the user's specification.
+
+While there are article generators that generate based off of a simple search term, this is one less level of abstraction from a simple search term - to ask the user to get engaged in collecting base data prior to outputting the articles.
+
+Hypothetically we could create an, "all in one" button as well that does both the article collection as well as the document generation.
+
+Links to these interfaces can be placed here:
+
+![](/readme_img/sponsordashboard.png)
+
+Within the knowledgebase menu or dashboard, there could simply be links to individual knowledgebases.  There should also be the capability to create a, "blank knowledgebase."
+
+![](/readme_img/knowledgebasedashboard.png)
+
+Clicking in on each individual knowledgebase should show the following - a knowledgebase is a collection of vocabularies, so links to individual vocabularies should be shown.
+
+![](/readme_img/knowledgebaselist.png)
+
+Vocabularies themselves are also lists - albeit they are lists of pre-processed articles.  When clicking on a vocabulary, the user should have the option to view the entire vocabulary as a printed out, "receipt" and to also go in and inspect individual articles by origin title or origin URL.
+
+Below shows a way of looking at each individual article (link to view printed out, "receipt" view not included).  Here gives the capability to look at all individual articles included within a vocabulary.
+
+~[](/readme_img/vocablist.png)
+
+We can later write optional logic which further cleans up a vocabulary by making certain lines, "inactive," due to not sufficient or irregularly scraped data.
+
+Ultimately, it's likely that the better job the program can do automatically cleaning and tagging the data, the more value the application may have overall, since on the other hand it's sort of a, "wrapper" for existing machine learning platforms.
+
+### Simplifying To Capture Articles
+
+The above layout is quite complicated. What might work to start off with, is to simply create the first page, a "search field," which helps a user create a knowledgebase, and then allow the knowledgebase to cascade and create an empty vocabulary, and further cascade and create an article collection.
+
+To start off with, there would not necessarily be a need to show each level on the user dashboard, or even a success message showing that the articles were successfully built or created.
+
+All of the data can be inspected manually via the database to start off with.
+
+### Sponsor Search Menu
+
+
 
 ### Storing Raw Text from Search
 
@@ -821,6 +875,7 @@ def make_shell_context():
 
 ### Adding Tags
 
+### Calculating Data Usage
 
 ## Sorting and KnowledgeBases
 
