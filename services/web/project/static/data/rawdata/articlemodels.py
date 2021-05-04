@@ -6,7 +6,6 @@ from sqlalchemy import Integer, ForeignKey, String, Column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 """Import other Models"""
-from project.static.data.processeddata.vocabmodels import Vocabulary
 
 """Articles Object"""
 class Article(db.Model):
@@ -62,7 +61,7 @@ class Article(db.Model):
         nullable=True
     )
 
-    """backreferences Vocabulary class on collections table"""
+    """backreferences vocabulary table on Collections Class"""
     vocabularies = relationship(
 		'Collection',
 		back_populates='article'
@@ -97,13 +96,13 @@ class Collection(db.Model):
         nullable=True
     )
 
-    """backreferences to user and document tables"""
+    """backreferences to article and vocabulary tables"""
     vocabulary = db.relationship(
         'Vocabulary',
-        back_populates='knowledgebases'
+        back_populates='articles'
         )
 
     article = db.relationship(
-        'Knowledgebase',
+        'Article',
         back_populates='vocabularies'
         )
