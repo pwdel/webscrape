@@ -863,6 +863,16 @@ To start off with, there would not necessarily be a need to show each level on t
 
 All of the data can be inspected manually via the database to start off with.
 
+#### Route and JinjaTemplate
+
+* The Jinjatemplate we create is the simplified form as described above, merely a searchbar.
+* knowledgebase_dashboard_sponsor.jinja2
+* The route goes under, "routes.py" within the sponsor routes.
+
+The route will call several functions within our machine learning architecture, writing to each appropriate field in the database respectively, including the association tables and then redirect to a success page.
+
+Ultimately the knowledgebase will be tied to the user through the Holding table, so that when we do show the user which knowledgebase they have access to, the Holding table will index that and display to them.
+
 ### Sponsor Search Menu
 
 
