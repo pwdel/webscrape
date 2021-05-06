@@ -873,6 +873,42 @@ The route will call several functions within our machine learning architecture, 
 
 Ultimately the knowledgebase will be tied to the user through the Holding table, so that when we do show the user which knowledgebase they have access to, the Holding table will index that and display to them.
 
+The form within the Jinjatemplate is called on as follows:
+
+```
+<div class="form-wrapper">
+
+	<form method="POST" action="">
+		{{ form.csrf_token }}
+		{{ form.name }}
+
+		<div class="search-bar">
+			<fieldset class="search">
+				{{ form.search.label }}
+				{{ form.search(placeholder='Enter topic search here...') }}
+				{% if form.search.errors %}
+					<ul class="errors">
+						{% for error in form.search.errors %}
+							<li>{{ error }}</li>{% endfor %}
+					</ul>
+				{% endif %}
+			</fieldset>
+		</div>
+
+		<p></p>
+
+		<div class="submit-button">
+			{{ form.submit }}
+		</div>
+
+		<p></p>
+
+	</form>
+
+</div>
+
+```
+
 ##### knowledgebasegenerator() Route
 
 * Create a route at "generator" for sponsors and decorate it with permissions.
@@ -885,25 +921,28 @@ from .forms import DocumentForm, SearchForm
 @login_required
 @sponsor_permission.require(http_exception=403)
 @approved_permission.require(http_exception=403)
-def knowledgebasegenerator():
-# search form
-form = SearchForm()
+def knowledgebasegenerator_sponsor():
+    # search form
+    form = SearchForm()
 
-	if form.validate_on_submit():
+    if form.validate_on_submit():
+        # take search term from form
+        # create search_string object, which is a regular object not a class
+        searchstring = form.search_string.data
+        # this object, "searchstring" then gets passed to another function
+        # the, "googlesearch" function, located in the project structure
+        # googlesearch(searchstring)
+        # redirect to dashboard after search performed
+        return redirect(url_for('sponsor_bp.dashboard_sponsor'))
 
-			# take search term from form
-			# create search_string object, which is a regular object not a class
-			searchstring = form.search_string.data,
-
-			# this object, "searchstring" then gets passed to another function
-			# the, "googlesearch" function, located in the project structure
-			googlesearch(searchstring)
-
-			# redirect to dashboard after search performed
-			return redirect(url_for('sponsor_bp.dashboard_sponsor'))
+    return render_template(
+        'knowledgebase_dashboard_sponsor.jinja2',
+        template='layout',
+        form=form
+    )
 
 ```
-Of course after the googlesearch(searchstring) function is completed, there are several other strings of functions which must occur.
+Of course after the <search function goes here> function is completed, there are several other strings of functions which must occur.
 
 1. googlesearch(searchstring)
 2. save results in raw article database
@@ -912,7 +951,6 @@ Of course after the googlesearch(searchstring) function is completed, there are 
 5. put vocab in location in knowledgebase, create name for each
 
 These above functions can each be placed in seperate folders on the /src area of the app, since they are more server-side, non-user interface type functions.
-
 
 ##### Form
 
@@ -932,12 +970,34 @@ class SearchForm(FlaskForm):
     submit = SubmitField('Submit')
 ```
 
+##### Linking to knowledgebasegenerator() Route from Dashboard
+
+The following link is added on the Sponsor Dashboard jinja template:
+
+```
+<div>
+	</div>
+		<a href="{{ url_for('sponsor_bp.knowledgebasegenerator_sponsor') }}">Create a Knowledgbase</a>
+	</div>
+</div>
+
+```
+
 ### sponsor_bp.searchsuccess_sponsor Route
 
+This is a route that can be used for a redirect to a success message. Starting out, the user can be redirected to the sponsor dashboard.
 
-### Sponsor Search Menu
+### searchstring.py Import Functions and Usage
 
+Within > static/src/datacollect there is already a searchscrape.py file, with the following functions:
 
+* searchterms(search_term), outputs search_results
+* scrapeurls(search_results) outputs titlelist,textlist
+
+The outputs are:
+
+* search_results is a dictionary list of URLs.
+* titlelist and textlist are dictionary lists of strings including the raw scraped title and raw scraped text from the webpages in question.
 
 ### Storing Raw Text from Search
 

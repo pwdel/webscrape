@@ -281,19 +281,25 @@ def documentedit_sponsor(document_id):
 @login_required
 @sponsor_permission.require(http_exception=403)
 @approved_permission.require(http_exception=403)
-def knowledgebasegenerator():
+def knowledgebasegenerator_sponsor():
     # search form
     form = SearchForm()
 
     if form.validate_on_submit():
         # take search term from form
-	    # create search_string object, which is a regular object not a class
-        searchstring = form.search_string.data,
-		# this object, "searchstring" then gets passed to another function
-		# the, "googlesearch" function, located in the project structure
-		googlesearch(searchstring)
-		# redirect to dashboard after search performed
-		return redirect(url_for('sponsor_bp.dashboard_sponsor'))
+        # create search_string object, which is a regular object not a class
+        searchstring = form.search.data
+        # this object, "searchstring" then gets passed to another function
+        # the, "googlesearch" function, located in the project structure
+        print('Sent: ',searchstring,' ...to current_app', file=sys.stderr)
+        # redirect to dashboard after search performed
+        return redirect(url_for('sponsor_bp.dashboard_sponsor'))
+
+    return render_template(
+        'knowledgebase_dashboard_sponsor.jinja2',
+        template='layout',
+        form=form
+    )
 
 
 # ---------- editor user routes ----------
