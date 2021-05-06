@@ -873,6 +873,68 @@ The route will call several functions within our machine learning architecture, 
 
 Ultimately the knowledgebase will be tied to the user through the Holding table, so that when we do show the user which knowledgebase they have access to, the Holding table will index that and display to them.
 
+##### knowledgebasegenerator() Route
+
+* Create a route at "generator" for sponsors and decorate it with permissions.
+
+```
+from .forms import DocumentForm, SearchForm
+...
+
+@sponsor_bp.route('/sponsor/generator', methods=['GET','POST'])
+@login_required
+@sponsor_permission.require(http_exception=403)
+@approved_permission.require(http_exception=403)
+def knowledgebasegenerator():
+# search form
+form = SearchForm()
+
+	if form.validate_on_submit():
+
+			# take search term from form
+			# create search_string object, which is a regular object not a class
+			searchstring = form.search_string.data,
+
+			# this object, "searchstring" then gets passed to another function
+			# the, "googlesearch" function, located in the project structure
+			googlesearch(searchstring)
+
+			# redirect to dashboard after search performed
+			return redirect(url_for('sponsor_bp.dashboard_sponsor'))
+
+```
+Of course after the googlesearch(searchstring) function is completed, there are several other strings of functions which must occur.
+
+1. googlesearch(searchstring)
+2. save results in raw article database
+3. regex function, then save those results in regexcleaned database
+4. vocabtokenizer, then save those results in vocab database
+5. put vocab in location in knowledgebase, create name for each
+
+These above functions can each be placed in seperate folders on the /src area of the app, since they are more server-side, non-user interface type functions.
+
+
+##### Form
+
+As shown in previous routes built within this application, the form works with, "validate on submit."
+
+However, we have to create a new form, a "SearchForm()" which basically takes one search term as an entry.  The form has to be imported.
+
+within forms.py, we create:
+
+```
+class SearchForm(FlaskForm):
+    """Search Term input Form"""
+    search_string = StringField(
+        'Search',
+        validators=[Optional()]
+    )
+    submit = SubmitField('Submit')
+```
+
+### sponsor_bp.searchsuccess_sponsor Route
+
+
 ### Sponsor Search Menu
 
 
