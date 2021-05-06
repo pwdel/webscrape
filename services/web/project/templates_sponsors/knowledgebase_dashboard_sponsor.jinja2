@@ -1,0 +1,46 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+  <div class="form-wrapper">
+
+    <div class="logo">
+      <img
+        src="{{ url_for('static', filename='img/linguo.jpg') }}"
+        alt="logo"
+      />
+    </div>
+
+    <h1>Knowledgebase Dashboard</h1>
+
+    <p>This is the list of your knowledgebases and a search form to create new knowledgebases.</p>
+
+  <p></p>
+
+  <h2>Generate Knowledgebase</h2>
+
+  <fieldset class="search">
+    {{ form.search.label }}
+    {{ form.search(placeholder='Enter topic search here...') }}
+    {% if form.search.errors %}
+      <ul class="errors">
+          <li>{{ error }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+  </fieldset>
+
+  <p></p>
+
+  <h2>Knowledgebases List</h2>
+
+  <p></p>
+
+    ...Coming Soon
+
+  <p></p>
+
+  </div>
+    <a href="{{ url_for('sponsor_bp.dashboard_sponsor') }}">Back to Sponsor Dashboard</a>
+  </div>
+
+
+{% endblock %}

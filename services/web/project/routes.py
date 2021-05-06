@@ -4,7 +4,7 @@ from flask import g, current_app, abort, request
 from flask_login import current_user, login_required
 from flask_login import logout_user
 # import form stuff
-from .forms import DocumentForm
+from .forms import DocumentForm, SearchForm
 from wtforms_sqlalchemy.orm import QuerySelectField
 
 # import models
@@ -105,7 +105,7 @@ def dashboard_sponsor():
 @sponsor_permission.require(http_exception=403)
 @approved_permission.require(http_exception=403)
 def newdocument_sponsor():
-    
+
     # new document form
     form = DocumentForm()
 
@@ -150,7 +150,7 @@ def newdocument_sponsor():
             editor_id=selected_editor_id,
             document_id=newdocument_id
             )
-        
+
         # add retention to session and commit to database
         db.session.add(newretention)
         db.session.commit()
@@ -177,7 +177,7 @@ def documentlist_sponsor():
     """Logged-in Sponsor List of Documents."""
     # get the current user id
     user_id = current_user.id
-    
+
     # Document objects list which includes editors for all objects
     # this logic will only work if document_objects.count() = editor_objects.count()
     # get document objects filtered by the current user
@@ -192,7 +192,7 @@ def documentlist_sponsor():
 
     # get a count of the document objects
     document_count = document_objects.count()
-    
+
     # blank list to append to for documents and editors
     document_list=[]
 
@@ -235,7 +235,7 @@ def documentedit_sponsor(document_id):
         # join query to get and display current editor id via the retention object
         retention_object = db.session.query(Retention).join(User, User.id == Retention.editor_id).filter(Retention.document_id == document_id)[0]
         # get current editor_id from retention object
-        current_editor_id = retention_object.editor_id 
+        current_editor_id = retention_object.editor_id
         # Getting the Editor Object
         # use this current editor object
         current_editor_object = db.session.query(User).filter(User.id == current_editor_id)[0]
@@ -276,6 +276,24 @@ def documentedit_sponsor(document_id):
     # should send back to dashboard
     abort(403)
 
+
+@sponsor_bp.route('/sponsor/generator', methods=['GET','POST'])
+@login_required
+@sponsor_permission.require(http_exception=403)
+@approved_permission.require(http_exception=403)
+def knowledgebasegenerator():
+    # search form
+    form = SearchForm()
+
+    if form.validate_on_submit():
+        # take search term from form
+	    # create search_string object, which is a regular object not a class
+        searchstring = form.search_string.data,
+		# this object, "searchstring" then gets passed to another function
+		# the, "googlesearch" function, located in the project structure
+		googlesearch(searchstring)
+		# redirect to dashboard after search performed
+		return redirect(url_for('sponsor_bp.dashboard_sponsor'))
 
 
 # ---------- editor user routes ----------
@@ -322,7 +340,7 @@ def documentlist_editor():
     """Logged-in Sponsor List of Documents."""
     # get the current user id
     user_id = current_user.id
-    
+
     # Document objects and list, as well as Editor objects and list
     # this logic will only work if document_objects.count() = editor_objects.count()
     # get document objects filtered by the current user
@@ -336,7 +354,7 @@ def documentlist_editor():
 
     # get a count of the document objects
     document_count = document_objects.count()
-    
+
     # blank list to append to for documents and editors
     document_list=[]
 
@@ -347,7 +365,7 @@ def documentlist_editor():
     # show list of document names
     documents = document_list
 
-    
+
     return render_template(
         'documentlist_editor.jinja2',
         documents=documents,
@@ -376,7 +394,7 @@ def documentedit_editor(document_id):
         # find the associated autodoc
         associated_autodoc = db.session.query(Document,Autodoc).join(Revision,Revision.document_id==Document.id).join(Autodoc,Autodoc.id==Revision.autodoc_id).filter(Revision.document_id == document_id)[0].Autodoc
 
-        
+
         if form.validate_on_submit():
             # take new document
             # edit document parameters
@@ -440,7 +458,7 @@ def signuprequests_admin():
 
 
     """Logged-in Admin List of Users."""
-    
+
     # User objects list which includes list of all users which can be broken down into editors and sponsors
     # get all users
     user_objects=db.session.query(User.id,User.email,User.user_type,User.user_status,User.name,User.organization).\
@@ -448,7 +466,7 @@ def signuprequests_admin():
 
     # get a count of the user objects
     user_count = user_objects.count()
-    
+
     # blank list to append to
     user_list=[]
 
@@ -472,7 +490,7 @@ def signuprequests_admin():
 def usersview_admin():
 
     """Logged-in Admin List of Users."""
-    
+
     # User objects list which includes list of all users which can be broken down into editors and sponsors
     # get all users
     user_objects=db.session.query(User.id,User.email,User.user_type,User.user_status,User.name,User.organization).\
@@ -480,7 +498,7 @@ def usersview_admin():
 
     # get a count of the user objects
     user_count = user_objects.count()
-    
+
     # blank list to append to
     user_list=[]
 
@@ -508,13 +526,13 @@ def userapprove_admin(user_id):
 
     # User objects list which includes list of all users which can be broken down into editors and sponsors
     # get individual user
-    user = db.session.query(User).filter(User.id==user_id).first() 
+    user = db.session.query(User).filter(User.id==user_id).first()
     # update status to approved
     user.user_status = 'approved'
     # commit to database
     db.session.commit()
 
-    return redirect(url_for('admin_bp.usersview_admin'))    
+    return redirect(url_for('admin_bp.usersview_admin'))
 
 
 @admin_bp.route('/admin/userreject/<user_id>', methods=['GET','POST'])
@@ -525,7 +543,7 @@ def userreject_admin(user_id):
 
     # User objects list which includes list of all users which can be broken down into editors and sponsors
     # get individual user
-    user = db.session.query(User).filter(User.id==user_id).first() 
+    user = db.session.query(User).filter(User.id==user_id).first()
     # update status to approved
     user.user_status = 'rejected'
     # commit to database

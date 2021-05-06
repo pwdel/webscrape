@@ -87,8 +87,17 @@ class DocumentForm(FlaskForm):
         validators=[Optional()]
     )
     editorchoice = QuerySelectField(
-        query_factory=user_query, 
-        allow_blank=True, 
+        query_factory=user_query,
+        allow_blank=True,
         get_label='name'
+    )
+    submit = SubmitField('Submit')
+
+
+class SearchForm(FlaskForm):
+    """Search Term input Form"""
+    search_string = StringField(
+        'Search',
+        validators=[Optional()]
     )
     submit = SubmitField('Submit')
