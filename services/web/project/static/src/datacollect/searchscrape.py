@@ -9,11 +9,13 @@ import requests
 
 # define search functionality for application
 def searchterms(search_term):
+    # set the results quantity
+    resultsqty=10
     # search the given input
-    search_output = search(search_term, num_results=100)
+    search_output = search(search_term, num_results=resultsqty)
     # output as a list of URLs
     # the first item search_results[0] is the Google Search string used
-    search_results = search_output[1:(num_results+1)]
+    search_results = search_output[1:(resultsqty+1)]
     # return a list of all search results
     return(search_results)
 

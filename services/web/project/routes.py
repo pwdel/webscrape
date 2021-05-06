@@ -20,10 +20,12 @@ from flask_principal import Identity, identity_changed, identity_loaded, Anonymo
 import sys
 # individual document access permission
 from .principalmanager import EditDocumentPermission
-
 # import autodocwriter to automatically write autodocs after new doc is created
 from project.static.src.features.doctokenization import gpt2tokenize
 from project.static.src.evaluation.autodocwriter import autodocwrite
+# import search functionality module
+from project.static.src.datacollect.searchscrape import searchterms, scrapeurls
+
 
 
 # Blueprint Configuration
@@ -291,7 +293,11 @@ def knowledgebasegenerator_sponsor():
         searchstring = form.search.data
         # this object, "searchstring" then gets passed to another function
         # the, "googlesearch" function, located in the project structure
-        print('Sent: ',searchstring,' ...to current_app', file=sys.stderr)
+        searchresults = searchterms(searchstring)
+        # scrape urls raw
+        urlscrapes = scrapeurls(searchresults)
+
+        print('Sent: ',urlscrapes,' ...to current_app', file=sys.stderr)
         # redirect to dashboard after search performed
         return redirect(url_for('sponsor_bp.dashboard_sponsor'))
 

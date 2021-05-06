@@ -18,7 +18,6 @@ text_tagsremovedlist = []
 def remove_tags(titlelist,textlist):
 
     # do this for all items in text list
-
     for counter in range(0,len(textlist)):
         # remove characters for a particular textlist item
         text_htmltags_removed = htmltags_re.sub('', str(textlist[counter]))

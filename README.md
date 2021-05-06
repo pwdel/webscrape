@@ -999,9 +999,42 @@ The outputs are:
 * search_results is a dictionary list of URLs.
 * titlelist and textlist are dictionary lists of strings including the raw scraped title and raw scraped text from the webpages in question.
 
+To use the above functions from the knowledgebasegenerator() Route, we have to import the module at the top:
+
+```
+# import search functionality module
+from project.static.src.datacollect.searchscrape import searchterms, scrapeurls
+...
+```
+
+Upon calling the searchterms function setting 10 results, we get:
+
+```
+flask  | Sent:  ['https://www.macrumors.com/guide/mmwave-vs-sub-6ghz-5g/', 'https://www.qualcomm.com/research/5g/5g-nr/mmwave', 'https://www.ericsson.com/en/reports-and-papers/further-insights/leveraging-the-potential-of-5g-millimeter-wave', 'https://www.rcrwireless.com/20210204/5g/whats-in-the-future-of-5g-millimeter-wave', 'https://www.androidauthority.com/what-is-5g-mmwave-933631/', 'http://www.profheath.org/analysis-of-millimeter-wave-systems-for-5g/', 'https://www.globenewswire.com/en/news-release/2020/12/02/2138610/0/en/Millimeter-Wave-Opens-New-Opportunities-for-5G-Networks.html', 'https://en.wikipedia.org/wiki/5G']  ...to current_app
+```
+And then following this up with a urlscrapes function, we get:
+
+```
+urlscrapes = scrapeurls(searchresults)
+
+...
+
+/static\\/images\\/wmf-hor-googpub.png"}},"datePublished":"2009-07-03T08:46:49Z","dateModified":"2021-04-28T04:28:34Z","image":"https:\\/\\/upload.wikimedia.org\\/wikipedia\\/en\\/4\\/43\\/3GPP_5G_logo.png","headline":"5th generation of cellular mobile communications"}', '\n', '(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgBackendResponseTime":180,"wgHostname":"mw1319"});});', '\n']])  ...to current_app
+
+```
+Which is basically an expected result.
+
 ### Storing Raw Text from Search
 
 ### Regex Remover & Storage
+
+### Threading and Counting
+
+https://stackoverflow.com/questions/64545872/how-to-let-a-flask-web-page-route-run-in-the-background-while-on-another-web-p
+
+https://stackoverflow.com/questions/40622366/flask-to-execute-other-tasks-after-return-render-template
+
+https://stackoverflow.com/questions/40989671/background-tasks-in-flask
 
 ### Tokenizer and Vocabulary Storage
 
