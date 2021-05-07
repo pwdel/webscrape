@@ -5,6 +5,7 @@ from googlesearch import search
 from bs4 import BeautifulSoup as bs
 # requests
 import requests
+import urllib.request
 
 
 # define search functionality for application
@@ -42,3 +43,22 @@ def scrapeurls(search_results):
 
     # return the title and text
     return(titlelist,textlist)
+
+# define the scrape functionality for application
+def scrapeurlsbyteresult(search_results):
+    # index search results
+
+    # start empty list of titles and texts
+    textlist = []
+
+    # for each search result through the length of search_results
+    for counter in range(0,len(search_results)):
+        # grab each URL
+        url = search_results[counter]
+        # read the url response
+        url_response = urllib.request.urlopen(url).read()
+        # find all text, append to list
+        textlist.append(url_response)
+
+    # return the title and text
+    return(textlist)

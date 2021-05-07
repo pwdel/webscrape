@@ -24,9 +24,9 @@ from .principalmanager import EditDocumentPermission
 from project.static.src.features.doctokenization import gpt2tokenize
 from project.static.src.evaluation.autodocwriter import autodocwrite
 # import search functionality module
-from project.static.src.datacollect.searchscrape import searchterms, scrapeurls
+from project.static.src.datacollect.searchscrape import searchterms, scrapeurls, scrapeurlsbyteresult
 # import regex cleaning functionality modules
-from project.static.src.preprocessing.regexclean import removetags, cleantext
+from project.static.src.preprocessing.regexclean import removetags, textfromhtml, tagvisible
 
 
 # Blueprint Configuration

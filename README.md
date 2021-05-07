@@ -1064,10 +1064,78 @@ After running through regexclean.removetags we get something like this:
 ```
 We’re a crew of WordPress professionals sharing our map to WordPress success with brilliant tutorials and tips.\', \'\\n\', \' \', \'\\n\', \'\\n\', \' \', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'Top Articles\', \'How to Install WordPress\', \'\\n\', \'How to Make a Website\', \'\\n\', \'How to Create a Blog\', \'\\n\', \'SiteGround vs Bluehost\', \'\\n\', \'Best Live Chat Plugins\', \'\\n\', \' \', \'\\n\', \'\\n\', \'Our Network\', \'CodeinWP\', \'\\n\', \'Optimole\', \'\\n\', \'Domain Wheel\', \'\\n\', \'ReviveSocial\', \'\\n\', \' \', \'\\n\', \'\\n\', \'Company\', \'About us\', \'\\n\', \'Newsletter\', \'\\n\', \'Contact us\', \'\\n\', \'Careers\', \'\\n\', \'Write for Us\', \'\\n\', \' \', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'Copyright © 2021\', \'\\n\', \'Themeisle\', \' | Powered by \', \'VertiStudio\', \'\\n\', \'\\n\', \'\\n\', \'Terms\', \'\\n\', \'Privacy Policy\', \'\\n\', \' \', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'X\', \'\\n\', \'\\n\', \'Most Searched Articles\', \'10 Best Free Blogging Sites to Build Your Blog for Free in 2021: Tested, Compared and Reviewed\', \'Looking for some free blog sites to help you start sharing your writing with the world? Whether you just want to share updates with your family and friends or you want to start a blog and build a broader audience, we’ve put together ten great ...\', \'How to Create and Start a WordPress Blog in 15 Minutes or Less (Step by Step)\', \'So you want to create a WordPress blog… Congratulations! WordPress is an excellent solution for how to start a blog, plus we think blogs are super awesome! Better yet – it’s also surprisingly simple to create a WordPress blog. ...\', \'The Complete Personal Blog Guide: How to Start a Personal Blog on WordPress\', \'There’s plenty of space on the internet for everybody. People love to share ideas, give shape to their thoughts, and maybe even reach a global audience. How to put yourself on the path to achieve all of that? For once, what if you start a ...\', \'\\n\', \'Handpicked Articles\', \'How to Make a WordPress Websit
 ```
+In the above, there are still a lot of character strings, so the regex method does not seem to be doing a full job of removing everything from an article that needs to be removed.  
+
+[This Colab Notebook](https://colab.research.google.com/drive/1BZz_NzLFf8LwueQlxijiVnCzliCAyNcC#scrollTo=IV_UAE-kOXI-) goes through some experimentation using BeautifulSoup to remove the, "text only," from a URL along with urllib.
+
+[urllib](https://docs.python.org/3/library/urllib.html) appears to be a standard python module.
+
+To speed up the process of testing out new cleaning functions, one URL at a time can be entered into the urlscrape function as a pre-made one-item list:
+
+```
+testurl = ['https://www.microwavejournal.com/articles/35948-uscellular-qualcomm-ericsson-and-inseego-address-digital-divide']
+```
+Scraping can then be done via the following on the flask shell:
+
+```
+scraped = scrapeurls(testurl)
+```
+However, the textfromhtml function requires a bytes object as an input, therefore:
+
+```
+# define the scrape functionality for application
+def scrapeurlsbyteresult(search_results):
+    # index search results
+
+    # start empty list of titles and texts
+    textlist = []
+    titlelist = []
+
+    # for each search result through the length of search_results
+    for counter in range(0,len(search_results)):
+        # grab each URL
+        url = search_results[counter]
+
+        # read the url response
+        url_response = urllib.request.urlopen('http://www.nytimes.com/2009/12/21/us/21storm.html').read()
+
+        # find all text, append to list
+        textlist.append(url_response)
+
+    # return the title and text
+    return(textlist)
+```
+After the above function is created, a test can be run through:
+
+```
+scraped = scrapeurlsbyteresult(search_results)
+```
+Which is shown to be a list of bytes:
+
+```
+>>> type(scraped[0])
+<class 'bytes'>
+```
+
+Since passing back and fourth functions based upon the previous structure using regex is a bit confusing, it might be better to just put all definitions and functions in one file and read a url piece by piece.
 
 
+### Checking if HTML Tags Visible
 
-### Threading and Counting
+Another meta-problem we have within scraping is being able to identify certain parts of a page through html tags. A function can check whether tags are available as follows:
+
+```
+# check if htmltags are visible
+def tag_visible(element):
+    if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
+        return False
+    if isinstance(element, Comment):
+        return False
+    return True
+```
+
+
+### Threading and Displaying a Pending Process to User
 
 https://stackoverflow.com/questions/64545872/how-to-let-a-flask-web-page-route-run-in-the-background-while-on-another-web-p
 
@@ -1086,6 +1154,46 @@ https://stackoverflow.com/questions/40989671/background-tasks-in-flask
 ### Adding Vocabularies to Knowledgebases
 
 ## Reducing 403 Forbidden Errors
+
+### Dealing with 403 Errors
+
+According to [this Stackoverflow article](https://stackoverflow.com/questions/3193060/catch-specific-http-error-in-python),
+
+```
+from urllib.error import HTTPError
+
+import urllib
+from urllib.error import HTTPError
+try:
+   urllib.urlopen("some url")
+except HTTPError as err:
+   if err.code == 404:
+       <whatever>
+   else:
+       raise
+
+
+```
+Building it out in a [Colab notebook](https://colab.research.google.com/drive/1AdYKLmYVuSWW7J9xxTPzKlKeOsJ2quPf#scrollTo=FW_4ZXSiQdhj) gives the following:
+
+```
+import urllib
+import urllib.request
+from urllib.error import HTTPError
+
+try:
+   urllib.request.urlopen(forbidden_url).read()
+except HTTPError as err:
+   if err.code == 404:
+     print("404 Error")
+   elif err.code == 403:
+     print("403 Error")
+   else:
+       raise
+```
+
+
+### Reducing 403 Errors by Specifying Browser Type
 
 https://stackoverflow.com/questions/13055208/httperror-http-error-403-forbidden
 

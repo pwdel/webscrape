@@ -1,7 +1,10 @@
 # regex removal
 import re
-# cleantext
-from cleantext import clean
+# BeautifulSoup
+from bs4 import BeautifulSoup
+from bs4.element import Comment
+import urllib.request
+
 
 # compile int a regular expression object given instructions
 # remove first layer of tags, characters
@@ -9,14 +12,12 @@ htmltags_re = re.compile(r'\[\[(?:[^|\]]*\|)?([^\]]+)\]\]')
 # compile and remove newline tags
 htmltags_nre = re.compile(r'\n\\n')
 
-
 # empty text tags removed list
 text_tagsremovedlist = []
 
 # removetags function
 # input a list of scraped websites, output text with regex removed
 def removetags(urlscrapes):
-
     # urlscrapes is a tuple and is accessed by
     # urlscrapes[0] = title
     # urlscrapes[1] = text
@@ -31,35 +32,34 @@ def removetags(urlscrapes):
 
     return(text_tagsremovedlist)
 
-def cleantext(text_tagsremovedlist):
+# define tag_visible function for filter
+# used in text_from_html function
+def tagvisible(element):
+    if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
+        return False
+    if isinstance(element, Comment):
+        return False
+    return True
 
-    cleanedtags = []
 
-    for counter in range(0,len(text_tagsremovedlist)):
-        currenttagslist = text_tagsremovedlist[counter]
-        cleanedtags.append(
-        clean(
-            currenttagslist,  # iterate over list
-            fix_unicode=True,               # fix various unicode errors
-            to_ascii=True,                  # transliterate to closest ASCII representation
-            lower=True,                     # lowercase text
-            no_line_breaks=False,           # fully strip line breaks as opposed to only normalizing them
-            no_urls=False,                  # replace all URLs with a special token
-            no_emails=False,                # replace all email addresses with a special token
-            no_phone_numbers=False,         # replace all phone numbers with a special token
-            no_numbers=False,               # replace all numbers with a special token
-            no_digits=False,                # replace all digits with a special token
-            no_currency_symbols=False,      # replace all currency symbols with a special token
-            no_punct=False,                 # remove punctuations
-            replace_with_punct="",          # instead of removing punctuations you may replace them
-            replace_with_url="<URL>",
-            replace_with_email="<EMAIL>",
-            replace_with_phone_number="<PHONE>",
-            replace_with_number="<NUMBER>",
-            replace_with_digit="0",
-            replace_with_currency_symbol="<CUR>",
-            lang="en"                        # set to 'de' for German special handling
-            )
-            )
+# extract text from html body
+def textfromhtml(urlscrapes):
+    # set empty text append list to return filled
+    extractedtexts = []
+    # urlscrapes is a tuple and is accessed by: urlscrapes[0] = title, urlscrapes[1] = text
+    # do this for all items in text list
+    for counter in range(0,len(urlscrapes)-1):
+        # grab the body of html text for a particular iteration
+        body = urlscrapes[counter]
+        # use the html parser to create a beautifulsoup object
+        # note in our previous raw data extraction we had not used html.parser
+        soup = BeautifulSoup(body, 'html.parser')
+        # find all text within the beautifulsoup object
+        foundtext = soup.findAll(text=True)
+        # filter visible text from foundtext
+        visibletexts = filter(tagvisible, foundtext)
+        # append to extracted texts list
+        extractedtexts.append(u" ".join(t.strip() for t in visibletexts))
 
-    return(cleanedtags)
+    # return extractedtexts object
+    return(extractedtexts)
