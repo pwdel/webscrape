@@ -15,12 +15,15 @@ text_tagsremovedlist = []
 
 # removetags function
 # input a list of scraped websites, output text with regex removed
-def remove_tags(titlelist,textlist):
+def removetags(urlscrapes):
 
+    # urlscrapes is a tuple and is accessed by
+    # urlscrapes[0] = title
+    # urlscrapes[1] = text
     # do this for all items in text list
-    for counter in range(0,len(textlist)):
+    for counter in range(0,len(urlscrapes[1])):
         # remove characters for a particular textlist item
-        text_htmltags_removed = htmltags_re.sub('', str(textlist[counter]))
+        text_htmltags_removed = htmltags_re.sub('', str(urlscrapes[1][counter]))
         # remove newline function on that list item
         text_ntags_removed = htmltags_nre.sub('', text_htmltags_removed)
         # append to list
@@ -28,14 +31,15 @@ def remove_tags(titlelist,textlist):
 
     return(text_tagsremovedlist)
 
-def clean_text(text_tagsremovedlist):
+def cleantext(text_tagsremovedlist):
 
     cleanedtags = []
 
     for counter in range(0,len(text_tagsremovedlist)):
+        currenttagslist = text_tagsremovedlist[counter]
         cleanedtags.append(
         clean(
-            text_tagsremovedlist[counter],  # iterate over list
+            currenttagslist,  # iterate over list
             fix_unicode=True,               # fix various unicode errors
             to_ascii=True,                  # transliterate to closest ASCII representation
             lower=True,                     # lowercase text
@@ -58,4 +62,4 @@ def clean_text(text_tagsremovedlist):
             )
             )
 
-    return()
+    return(cleanedtags)

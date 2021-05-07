@@ -1026,7 +1026,46 @@ Which is basically an expected result.
 
 ### Storing Raw Text from Search
 
+
+
 ### Regex Remover & Storage
+
+Under regex cleaning, there are a few functions stored within:
+
+/project/static/src/preprocessing/regexclean.py
+
+Hence, importing from there within the routes.py file...
+
+```
+from project.static.src.preprocessing.regexclean import removetags, cleantext
+```
+
+Now, looking at the results of scrapeurls...
+
+```
+urlscrapes = scrapeurls(searchresults)
+
+type(urlscrapes)
+<class 'tuple'>
+```
+Therefore, to access the tuple is through numerical accessing:
+
+```
+>>> urlscrapes[0][0]
+<title>403 Forbidden</title>
+>>> urlscrapes[0][1]
+<title data-rh="true" itemprop="name" lang="en">5G NR mmWave | Qualcomm</title>
+```
+# urlscrapes[0] = title
+# urlscrapes[1] = text
+
+After running through regexclean.removetags we get something like this:
+
+```
+We’re a crew of WordPress professionals sharing our map to WordPress success with brilliant tutorials and tips.\', \'\\n\', \' \', \'\\n\', \'\\n\', \' \', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'Top Articles\', \'How to Install WordPress\', \'\\n\', \'How to Make a Website\', \'\\n\', \'How to Create a Blog\', \'\\n\', \'SiteGround vs Bluehost\', \'\\n\', \'Best Live Chat Plugins\', \'\\n\', \' \', \'\\n\', \'\\n\', \'Our Network\', \'CodeinWP\', \'\\n\', \'Optimole\', \'\\n\', \'Domain Wheel\', \'\\n\', \'ReviveSocial\', \'\\n\', \' \', \'\\n\', \'\\n\', \'Company\', \'About us\', \'\\n\', \'Newsletter\', \'\\n\', \'Contact us\', \'\\n\', \'Careers\', \'\\n\', \'Write for Us\', \'\\n\', \' \', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'Copyright © 2021\', \'\\n\', \'Themeisle\', \' | Powered by \', \'VertiStudio\', \'\\n\', \'\\n\', \'\\n\', \'Terms\', \'\\n\', \'Privacy Policy\', \'\\n\', \' \', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'X\', \'\\n\', \'\\n\', \'Most Searched Articles\', \'10 Best Free Blogging Sites to Build Your Blog for Free in 2021: Tested, Compared and Reviewed\', \'Looking for some free blog sites to help you start sharing your writing with the world? Whether you just want to share updates with your family and friends or you want to start a blog and build a broader audience, we’ve put together ten great ...\', \'How to Create and Start a WordPress Blog in 15 Minutes or Less (Step by Step)\', \'So you want to create a WordPress blog… Congratulations! WordPress is an excellent solution for how to start a blog, plus we think blogs are super awesome! Better yet – it’s also surprisingly simple to create a WordPress blog. ...\', \'The Complete Personal Blog Guide: How to Start a Personal Blog on WordPress\', \'There’s plenty of space on the internet for everybody. People love to share ideas, give shape to their thoughts, and maybe even reach a global audience. How to put yourself on the path to achieve all of that? For once, what if you start a ...\', \'\\n\', \'Handpicked Articles\', \'How to Make a WordPress Websit
+```
+
+
 
 ### Threading and Counting
 
@@ -1046,9 +1085,22 @@ https://stackoverflow.com/questions/40989671/background-tasks-in-flask
 
 ### Adding Vocabularies to Knowledgebases
 
+## Reducing 403 Forbidden Errors
+
+https://stackoverflow.com/questions/13055208/httperror-http-error-403-forbidden
+
+## Improving Google Search Starting Point with CustomSearch API
+
+https://stackoverflow.com/questions/41032472/how-to-query-an-advanced-search-with-google-customsearch-api
+
+## Counting Punctuation Strategy
+
+https://stackoverflow.com/questions/55865048/counting-specific-punctuation-symbols-in-a-given-text-without-using-regex-or-ot
 
 
 # References
+
+
 
 * [Text Data Cleaning Steps for Python](https://www.analyticsvidhya.com/blog/2014/11/text-data-cleaning-steps-python/)
 * [NTALK Library for NLP Data Cleaning](https://www.analyticsvidhya.com/blog/2020/11/text-cleaning-nltk-library/)

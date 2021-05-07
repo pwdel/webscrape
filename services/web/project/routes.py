@@ -25,7 +25,8 @@ from project.static.src.features.doctokenization import gpt2tokenize
 from project.static.src.evaluation.autodocwriter import autodocwrite
 # import search functionality module
 from project.static.src.datacollect.searchscrape import searchterms, scrapeurls
-
+# import regex cleaning functionality modules
+from project.static.src.preprocessing.regexclean import removetags, cleantext
 
 
 # Blueprint Configuration
@@ -296,6 +297,10 @@ def knowledgebasegenerator_sponsor():
         searchresults = searchterms(searchstring)
         # scrape urls raw
         urlscrapes = scrapeurls(searchresults)
+
+        # removetags, takes in the title and
+
+        # cleantext,
 
         print('Sent: ',urlscrapes,' ...to current_app', file=sys.stderr)
         # redirect to dashboard after search performed
