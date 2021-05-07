@@ -873,6 +873,42 @@ The route will call several functions within our machine learning architecture, 
 
 Ultimately the knowledgebase will be tied to the user through the Holding table, so that when we do show the user which knowledgebase they have access to, the Holding table will index that and display to them.
 
+The form within the Jinjatemplate is called on as follows:
+
+```
+<div class="form-wrapper">
+
+	<form method="POST" action="">
+		{{ form.csrf_token }}
+		{{ form.name }}
+
+		<div class="search-bar">
+			<fieldset class="search">
+				{{ form.search.label }}
+				{{ form.search(placeholder='Enter topic search here...') }}
+				{% if form.search.errors %}
+					<ul class="errors">
+						{% for error in form.search.errors %}
+							<li>{{ error }}</li>{% endfor %}
+					</ul>
+				{% endif %}
+			</fieldset>
+		</div>
+
+		<p></p>
+
+		<div class="submit-button">
+			{{ form.submit }}
+		</div>
+
+		<p></p>
+
+	</form>
+
+</div>
+
+```
+
 ##### knowledgebasegenerator() Route
 
 * Create a route at "generator" for sponsors and decorate it with permissions.
@@ -885,25 +921,28 @@ from .forms import DocumentForm, SearchForm
 @login_required
 @sponsor_permission.require(http_exception=403)
 @approved_permission.require(http_exception=403)
-def knowledgebasegenerator():
-# search form
-form = SearchForm()
+def knowledgebasegenerator_sponsor():
+    # search form
+    form = SearchForm()
 
-	if form.validate_on_submit():
+    if form.validate_on_submit():
+        # take search term from form
+        # create search_string object, which is a regular object not a class
+        searchstring = form.search_string.data
+        # this object, "searchstring" then gets passed to another function
+        # the, "googlesearch" function, located in the project structure
+        # googlesearch(searchstring)
+        # redirect to dashboard after search performed
+        return redirect(url_for('sponsor_bp.dashboard_sponsor'))
 
-			# take search term from form
-			# create search_string object, which is a regular object not a class
-			searchstring = form.search_string.data,
-
-			# this object, "searchstring" then gets passed to another function
-			# the, "googlesearch" function, located in the project structure
-			googlesearch(searchstring)
-
-			# redirect to dashboard after search performed
-			return redirect(url_for('sponsor_bp.dashboard_sponsor'))
+    return render_template(
+        'knowledgebase_dashboard_sponsor.jinja2',
+        template='layout',
+        form=form
+    )
 
 ```
-Of course after the googlesearch(searchstring) function is completed, there are several other strings of functions which must occur.
+Of course after the <search function goes here> function is completed, there are several other strings of functions which must occur.
 
 1. googlesearch(searchstring)
 2. save results in raw article database
@@ -912,7 +951,6 @@ Of course after the googlesearch(searchstring) function is completed, there are 
 5. put vocab in location in knowledgebase, create name for each
 
 These above functions can each be placed in seperate folders on the /src area of the app, since they are more server-side, non-user interface type functions.
-
 
 ##### Form
 
@@ -932,16 +970,178 @@ class SearchForm(FlaskForm):
     submit = SubmitField('Submit')
 ```
 
+##### Linking to knowledgebasegenerator() Route from Dashboard
+
+The following link is added on the Sponsor Dashboard jinja template:
+
+```
+<div>
+	</div>
+		<a href="{{ url_for('sponsor_bp.knowledgebasegenerator_sponsor') }}">Create a Knowledgbase</a>
+	</div>
+</div>
+
+```
+
 ### sponsor_bp.searchsuccess_sponsor Route
 
+This is a route that can be used for a redirect to a success message. Starting out, the user can be redirected to the sponsor dashboard.
 
-### Sponsor Search Menu
+### searchstring.py Import Functions and Usage
 
+Within > static/src/datacollect there is already a searchscrape.py file, with the following functions:
 
+* searchterms(search_term), outputs search_results
+* scrapeurls(search_results) outputs titlelist,textlist
+
+The outputs are:
+
+* search_results is a dictionary list of URLs.
+* titlelist and textlist are dictionary lists of strings including the raw scraped title and raw scraped text from the webpages in question.
+
+To use the above functions from the knowledgebasegenerator() Route, we have to import the module at the top:
+
+```
+# import search functionality module
+from project.static.src.datacollect.searchscrape import searchterms, scrapeurls
+...
+```
+
+Upon calling the searchterms function setting 10 results, we get:
+
+```
+flask  | Sent:  ['https://www.macrumors.com/guide/mmwave-vs-sub-6ghz-5g/', 'https://www.qualcomm.com/research/5g/5g-nr/mmwave', 'https://www.ericsson.com/en/reports-and-papers/further-insights/leveraging-the-potential-of-5g-millimeter-wave', 'https://www.rcrwireless.com/20210204/5g/whats-in-the-future-of-5g-millimeter-wave', 'https://www.androidauthority.com/what-is-5g-mmwave-933631/', 'http://www.profheath.org/analysis-of-millimeter-wave-systems-for-5g/', 'https://www.globenewswire.com/en/news-release/2020/12/02/2138610/0/en/Millimeter-Wave-Opens-New-Opportunities-for-5G-Networks.html', 'https://en.wikipedia.org/wiki/5G']  ...to current_app
+```
+And then following this up with a urlscrapes function, we get:
+
+```
+urlscrapes = scrapeurls(searchresults)
+
+...
+
+/static\\/images\\/wmf-hor-googpub.png"}},"datePublished":"2009-07-03T08:46:49Z","dateModified":"2021-04-28T04:28:34Z","image":"https:\\/\\/upload.wikimedia.org\\/wikipedia\\/en\\/4\\/43\\/3GPP_5G_logo.png","headline":"5th generation of cellular mobile communications"}', '\n', '(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgBackendResponseTime":180,"wgHostname":"mw1319"});});', '\n']])  ...to current_app
+
+```
+Which is basically an expected result.
 
 ### Storing Raw Text from Search
 
+
+
 ### Regex Remover & Storage
+
+Under regex cleaning, there are a few functions stored within:
+
+/project/static/src/preprocessing/regexclean.py
+
+Hence, importing from there within the routes.py file...
+
+```
+from project.static.src.preprocessing.regexclean import removetags, cleantext
+```
+
+Now, looking at the results of scrapeurls...
+
+```
+urlscrapes = scrapeurls(searchresults)
+
+type(urlscrapes)
+<class 'tuple'>
+```
+Therefore, to access the tuple is through numerical accessing:
+
+```
+>>> urlscrapes[0][0]
+<title>403 Forbidden</title>
+>>> urlscrapes[0][1]
+<title data-rh="true" itemprop="name" lang="en">5G NR mmWave | Qualcomm</title>
+```
+# urlscrapes[0] = title
+# urlscrapes[1] = text
+
+After running through regexclean.removetags we get something like this:
+
+```
+We’re a crew of WordPress professionals sharing our map to WordPress success with brilliant tutorials and tips.\', \'\\n\', \' \', \'\\n\', \'\\n\', \' \', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'Top Articles\', \'How to Install WordPress\', \'\\n\', \'How to Make a Website\', \'\\n\', \'How to Create a Blog\', \'\\n\', \'SiteGround vs Bluehost\', \'\\n\', \'Best Live Chat Plugins\', \'\\n\', \' \', \'\\n\', \'\\n\', \'Our Network\', \'CodeinWP\', \'\\n\', \'Optimole\', \'\\n\', \'Domain Wheel\', \'\\n\', \'ReviveSocial\', \'\\n\', \' \', \'\\n\', \'\\n\', \'Company\', \'About us\', \'\\n\', \'Newsletter\', \'\\n\', \'Contact us\', \'\\n\', \'Careers\', \'\\n\', \'Write for Us\', \'\\n\', \' \', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'Copyright © 2021\', \'\\n\', \'Themeisle\', \' | Powered by \', \'VertiStudio\', \'\\n\', \'\\n\', \'\\n\', \'Terms\', \'\\n\', \'Privacy Policy\', \'\\n\', \' \', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'\\n\', \'X\', \'\\n\', \'\\n\', \'Most Searched Articles\', \'10 Best Free Blogging Sites to Build Your Blog for Free in 2021: Tested, Compared and Reviewed\', \'Looking for some free blog sites to help you start sharing your writing with the world? Whether you just want to share updates with your family and friends or you want to start a blog and build a broader audience, we’ve put together ten great ...\', \'How to Create and Start a WordPress Blog in 15 Minutes or Less (Step by Step)\', \'So you want to create a WordPress blog… Congratulations! WordPress is an excellent solution for how to start a blog, plus we think blogs are super awesome! Better yet – it’s also surprisingly simple to create a WordPress blog. ...\', \'The Complete Personal Blog Guide: How to Start a Personal Blog on WordPress\', \'There’s plenty of space on the internet for everybody. People love to share ideas, give shape to their thoughts, and maybe even reach a global audience. How to put yourself on the path to achieve all of that? For once, what if you start a ...\', \'\\n\', \'Handpicked Articles\', \'How to Make a WordPress Websit
+```
+In the above, there are still a lot of character strings, so the regex method does not seem to be doing a full job of removing everything from an article that needs to be removed.  
+
+[This Colab Notebook](https://colab.research.google.com/drive/1BZz_NzLFf8LwueQlxijiVnCzliCAyNcC#scrollTo=IV_UAE-kOXI-) goes through some experimentation using BeautifulSoup to remove the, "text only," from a URL along with urllib.
+
+[urllib](https://docs.python.org/3/library/urllib.html) appears to be a standard python module.
+
+To speed up the process of testing out new cleaning functions, one URL at a time can be entered into the urlscrape function as a pre-made one-item list:
+
+```
+testurl = ['https://www.microwavejournal.com/articles/35948-uscellular-qualcomm-ericsson-and-inseego-address-digital-divide']
+```
+Scraping can then be done via the following on the flask shell:
+
+```
+scraped = scrapeurls(testurl)
+```
+However, the textfromhtml function requires a bytes object as an input, therefore:
+
+```
+# define the scrape functionality for application
+def scrapeurlsbyteresult(search_results):
+    # index search results
+
+    # start empty list of titles and texts
+    textlist = []
+    titlelist = []
+
+    # for each search result through the length of search_results
+    for counter in range(0,len(search_results)):
+        # grab each URL
+        url = search_results[counter]
+
+        # read the url response
+        url_response = urllib.request.urlopen('http://www.nytimes.com/2009/12/21/us/21storm.html').read()
+
+        # find all text, append to list
+        textlist.append(url_response)
+
+    # return the title and text
+    return(textlist)
+```
+After the above function is created, a test can be run through:
+
+```
+scraped = scrapeurlsbyteresult(search_results)
+```
+Which is shown to be a list of bytes:
+
+```
+>>> type(scraped[0])
+<class 'bytes'>
+```
+
+Since passing back and fourth functions based upon the previous structure using regex is a bit confusing, it might be better to just put all definitions and functions in one file and read a url piece by piece.
+
+
+### Checking if HTML Tags Visible
+
+Another meta-problem we have within scraping is being able to identify certain parts of a page through html tags. A function can check whether tags are available as follows:
+
+```
+# check if htmltags are visible
+def tag_visible(element):
+    if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
+        return False
+    if isinstance(element, Comment):
+        return False
+    return True
+```
+
+
+### Threading and Displaying a Pending Process to User
+
+https://stackoverflow.com/questions/64545872/how-to-let-a-flask-web-page-route-run-in-the-background-while-on-another-web-p
+
+https://stackoverflow.com/questions/40622366/flask-to-execute-other-tasks-after-return-render-template
+
+https://stackoverflow.com/questions/40989671/background-tasks-in-flask
 
 ### Tokenizer and Vocabulary Storage
 
@@ -953,9 +1153,62 @@ class SearchForm(FlaskForm):
 
 ### Adding Vocabularies to Knowledgebases
 
+## Reducing 403 Forbidden Errors
+
+### Dealing with 403 Errors
+
+According to [this Stackoverflow article](https://stackoverflow.com/questions/3193060/catch-specific-http-error-in-python),
+
+```
+from urllib.error import HTTPError
+
+import urllib
+from urllib.error import HTTPError
+try:
+   urllib.urlopen("some url")
+except HTTPError as err:
+   if err.code == 404:
+       <whatever>
+   else:
+       raise
+
+
+```
+Building it out in a [Colab notebook](https://colab.research.google.com/drive/1AdYKLmYVuSWW7J9xxTPzKlKeOsJ2quPf#scrollTo=FW_4ZXSiQdhj) gives the following:
+
+```
+import urllib
+import urllib.request
+from urllib.error import HTTPError
+
+try:
+   urllib.request.urlopen(forbidden_url).read()
+except HTTPError as err:
+   if err.code == 404:
+     print("404 Error")
+   elif err.code == 403:
+     print("403 Error")
+   else:
+       raise
+```
+
+
+### Reducing 403 Errors by Specifying Browser Type
+
+https://stackoverflow.com/questions/13055208/httperror-http-error-403-forbidden
+
+## Improving Google Search Starting Point with CustomSearch API
+
+https://stackoverflow.com/questions/41032472/how-to-query-an-advanced-search-with-google-customsearch-api
+
+## Counting Punctuation Strategy
+
+https://stackoverflow.com/questions/55865048/counting-specific-punctuation-symbols-in-a-given-text-without-using-regex-or-ot
 
 
 # References
+
+
 
 * [Text Data Cleaning Steps for Python](https://www.analyticsvidhya.com/blog/2014/11/text-data-cleaning-steps-python/)
 * [NTALK Library for NLP Data Cleaning](https://www.analyticsvidhya.com/blog/2020/11/text-cleaning-nltk-library/)

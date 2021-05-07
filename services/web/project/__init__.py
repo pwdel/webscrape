@@ -214,6 +214,12 @@ def on_identity_loaded(sender, identity):
 # create shell context processor
 from .models import db, Document, User, Retention
 from project.static.data.processeddata.autodocsmodels import Autodoc, Revision
+# import raw data
+from project.static.data.rawdata.articlemodels import Article, Collection
+# import processed data
+from project.static.data.processeddata.vocabmodels import Glossary, Vocabulary
+from project.static.data.processeddata.knowledgebasemodels import Holding, Knowledgebase
+
 # python shell context processor
 @app.shell_context_processor
 def make_shell_context():

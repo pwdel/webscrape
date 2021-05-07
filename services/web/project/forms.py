@@ -96,7 +96,7 @@ class DocumentForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     """Search Term input Form"""
-    search_string = StringField(
+    search = StringField(
         'Search',
         validators=[Optional()]
     )

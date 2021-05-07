@@ -20,10 +20,13 @@ from flask_principal import Identity, identity_changed, identity_loaded, Anonymo
 import sys
 # individual document access permission
 from .principalmanager import EditDocumentPermission
-
 # import autodocwriter to automatically write autodocs after new doc is created
 from project.static.src.features.doctokenization import gpt2tokenize
 from project.static.src.evaluation.autodocwriter import autodocwrite
+# import search functionality module
+from project.static.src.datacollect.searchscrape import searchterms, scrapeurls, scrapeurlsbyteresult
+# import regex cleaning functionality modules
+from project.static.src.preprocessing.regexclean import removetags, textfromhtml, tagvisible
 
 
 # Blueprint Configuration
@@ -281,19 +284,33 @@ def documentedit_sponsor(document_id):
 @login_required
 @sponsor_permission.require(http_exception=403)
 @approved_permission.require(http_exception=403)
-def knowledgebasegenerator():
+def knowledgebasegenerator_sponsor():
     # search form
     form = SearchForm()
 
     if form.validate_on_submit():
         # take search term from form
-	    # create search_string object, which is a regular object not a class
-        searchstring = form.search_string.data,
-		# this object, "searchstring" then gets passed to another function
-		# the, "googlesearch" function, located in the project structure
-		googlesearch(searchstring)
-		# redirect to dashboard after search performed
-		return redirect(url_for('sponsor_bp.dashboard_sponsor'))
+        # create search_string object, which is a regular object not a class
+        searchstring = form.search.data
+        # this object, "searchstring" then gets passed to another function
+        # the, "googlesearch" function, located in the project structure
+        searchresults = searchterms(searchstring)
+        # scrape urls raw
+        urlscrapes = scrapeurls(searchresults)
+
+        # removetags, takes in the title and
+
+        # cleantext,
+
+        print('Sent: ',urlscrapes,' ...to current_app', file=sys.stderr)
+        # redirect to dashboard after search performed
+        return redirect(url_for('sponsor_bp.dashboard_sponsor'))
+
+    return render_template(
+        'knowledgebase_dashboard_sponsor.jinja2',
+        template='layout',
+        form=form
+    )
 
 
 # ---------- editor user routes ----------

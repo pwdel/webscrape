@@ -16,4 +16,3 @@ transformers==4.5.1
 googlesearch-python==2020.0.2
 beautifulsoup4==4.9.1
 requests==2.24.0
-clean-text==0.4.0
