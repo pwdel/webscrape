@@ -1024,10 +1024,6 @@ urlscrapes = scrapeurls(searchresults)
 ```
 Which is basically an expected result.
 
-### Storing Raw Text from Search
-
-
-
 ### Regex Remover & Storage
 
 Under regex cleaning, there are a few functions stored within:
@@ -1119,6 +1115,72 @@ Which is shown to be a list of bytes:
 
 Since passing back and fourth functions based upon the previous structure using regex is a bit confusing, it might be better to just put all definitions and functions in one file and read a url piece by piece.
 
+On the other hand, there may be value in storing the originally scraped raw HTML.
+
+#### Temporary Fix For Dealing with HTTPErrors
+
+For HTTP403, basically websites preventing us from scraping, we can create an exception.  
+
+Basically, the urllib.request.urlopen(x).read() may not work if there is a forbidden url. Therefore we can use "try/except"
+
+```
+try:
+   url_response = urllib.request.urlopen(url).read()
+except HTTPError as err:
+	if err.code == 404:
+		url_response = "404 Error"
+	elif err.code == 403:
+		url_response = "403 Error"
+	else:
+		url_response = "Other Error"
+```
+Note above we're just using, "Other Error" to handle all other errors at this point. A full error handling function can be created in the future.
+
+```
+# take in a dictionary list of urls
+def scrapeurlsbyteresult(search_results):
+    # index search results
+
+    # start empty list of titles and texts
+    textlist = []
+
+    # for each search result through the length of search_results
+    for counter in range(0,len(search_results)):
+        # grab each URL
+        url = search_results[counter]
+
+        # try reading the url response
+				try:
+				   url_response = urllib.request.urlopen(url).read()
+				except HTTPError as err:
+					if err.code == 404:
+						url_response = "404 Error"
+					elif err.code == 403:
+						url_response = "403 Error"
+					else:
+						url_response = "Other Error"
+
+        # find all text, append to list
+        textlist.append(url_response)
+
+    # return the title and text
+    return(textlist)
+```
+
+After the above is implemented, then any 403 errors will result in the following dictionary entry:
+
+```
+>>> b[2]
+'403 Error'
+```
+After successfully creating a bytes-result function, "scrapeurlsbyteresult(search_results):", we can clean up the rest of our functions by eliminating them from searchscrape.py and regexclean.py.
+
+We remove:
+
+* scrapeurls(search_results): from searchscrape.py.
+* removetags(urlscrapes): from regexclean.py
+
+And now we have a bytes object
 
 ### Checking if HTML Tags Visible
 
@@ -1134,6 +1196,15 @@ def tag_visible(element):
     return True
 ```
 
+### Storing URLs
+
+### Storing Titles
+
+### Storing Raw Text from Search
+
+### Storing Regex Cleaned Text
+
+
 
 ### Threading and Displaying a Pending Process to User
 
@@ -1145,6 +1216,8 @@ https://stackoverflow.com/questions/40989671/background-tasks-in-flask
 
 ### Tokenizer and Vocabulary Storage
 
+Tokenization is actually a processor intensive task and should be done with a CUDA-enabled GPU version of this program.  This task will be deferred for now.
+
 ### Adding Tags
 
 ### Calculating Data Usage
@@ -1153,7 +1226,9 @@ https://stackoverflow.com/questions/40989671/background-tasks-in-flask
 
 ### Adding Vocabularies to Knowledgebases
 
-## Reducing 403 Forbidden Errors
+## Reducing Various HTTP Errors
+
+Various HTTP Errors may occur, unforseen access errors which we haven't accounted for within this repo.  There must be a concerted effort to create a structured approach for storing and tagging all collected data based upon HTTP status at the time of web scrape.
 
 ### Dealing with 403 Errors
 
@@ -1192,19 +1267,73 @@ except HTTPError as err:
        raise
 ```
 
+The possible errors are defined in the [python documentation](https://docs.python.org/3/library/urllib.error.html#urllib.error.HTTPError) as being all of those defined under [RFC 2616](https://tools.ietf.org/html/rfc2616.html), under, "[Status Code Definitions](https://tools.ietf.org/html/rfc2616.html#section-10)".
 
-### Reducing 403 Errors by Specifying Browser Type
+Instead of merely printing an error for each status code, we should instead write the status code to the database as a pre-defined string so that we can later count or do analytics on it, as well as create exceptions to ensure these pages are not used for linguistic processing.
 
-https://stackoverflow.com/questions/13055208/httperror-http-error-403-forbidden
+### Quick Fix - Reducing 403 Errors by Specifying Browser Type
 
-## Improving Google Search Starting Point with CustomSearch API
+Upon initial inspection of various search results, it appears that a lot of websites give a 403 error for webscrapers.
 
-https://stackoverflow.com/questions/41032472/how-to-query-an-advanced-search-with-google-customsearch-api
+One purported way to combat this is to use [User Agents](https://stackoverflow.com/questions/13055208/httperror-http-error-403-forbidden).
 
-## Counting Punctuation Strategy
+Previously, by using urlopen(), we were doing that without feeding in a browser/agent.
 
-https://stackoverflow.com/questions/55865048/counting-specific-punctuation-symbols-in-a-given-text-without-using-regex-or-ot
+```
+hdr = {'User-Agent': 'Mozilla/5.0'}
+req = Request(site,headers=hdr)
 
+try:
+   req = Request(forbidden_url,headers=hdr)
+   url_response = urllib.request.urlopen(req).read()
+except HTTPError as err:
+
+...
+
+```
+
+Where basically we tell the agent that we are viewing this through Mozilla, thereby masking ourselves and purporting to be a browser, when we're really a command line from a server.
+
+After implementing this, the amount of webpages we can reach increases from anywhere from 1.25X to 2X.
+
+## Future Work
+
+* [HTTP Status Code Processing](https://tools.ietf.org/html/rfc2616.html#section-10) - as discussed above.
+* [Improving Google Search Starting Point with CustomSearch API](https://stackoverflow.com/questions/41032472/how-to-query-an-advanced-search-with-google-customsearch-api)
+* Advanced Google Search - Pre-Search Known Domain of Quality Text Sources
+* Continual Regex Improvement
+* Improving Data Input at Startpoint - Custom Search, Search Service
+* Improving Data Input after collection - Custom Human Editing, Tagging, Cleaning
+* Read through [this](https://tools.ietf.org/html/rfc2616.html#section-10)
+* Scraped Text Quality
+
+### Scraped Text Quality
+
+Aside from the metaquality of the text, meaning the capability to remove regex and punctuation and other non-human readable elements, there is the actual quality of the text, which may be difficult for a computer to parse in an unsupervised manner.
+
+We could create some kind of user method of, "flagging" or highlighting or removing portions of text that seem not to be helpful within the creation of a knowledgebase.
+
+For example, within an example scrape of 5G mmwave, we get one result which shows the following:
+
+```
+Skip to content                 Core Competence Technology Briefs Why 5G Networks Need DCSG Routers The EBOF Solution for Hyperscale Data Centers The Benefits of Programmable Switch ASICs PAM4 Signal Integrity Virtualization of CPEs Wi-Fi Certified Agile Multiband™ BLE Beacons and Location-Based Services The New World of 400 Gbps Ethernet Network Time Synchronization TIP and Accton’s Open Packet Transponder The Emergence of 5G mmWave vOLT Concepts Intel® DPDK Performance on the SAU5081I Server CORD Fundamentals with OpenStack High-Efficiency IEEE 802.11ax SD-WANs and WAN Optimization Coherent Optics for Efficiency and Capacity R&D Capabilities Design and Development Technology Supply Chain Quality Manufacturing Solutions Cloud Data Center Solution Carrier Access Solution Campus Network Solution IoT Integration Solution SD-WAN Solution Investor Relations Letter to Shareholders Corporate Governance Annual Reports Monthly Earnings Summary Announcements Annual Meeting of Stockholders Stocks and Dividend Investor Services Press Careers Benefits and Well-being Career Development Join Accton Life @ Accton CSR Corporate Sustainability Report CSR Policies Environmental Progress Communication with Stakeholders About Accton Company Brief Accton Group Document Center Contact Us Privacy Policy     Search for:          TW                  The Emergence of 5G mmWave accton_en 2021-05-06T07:35:43+00:00   Project Description
+```
+While upon first glance, and particularly from the computer's perspective without any formally trained model - this text appears to be, "normal human written text," it is actually a bunch of either SEO terms which may have been hidden in the text, or menu items, or both.  The actual, "text text" starts later and looks like the following:
+
+```
+The Emergence of 5G mmWave  What is mmWave Wireless? This technology brief looks at the emergence of new 5G New Radio (5G NR or just 5G) standards for mobile cellular networks and how it has the potential to deliver a complete transformation of wireless communications. The spectrum for 5G services not only covers bands below 6 GHz, including bands currently used for 4G LTE networks, but also extends into much higher frequency bands not previously considered for mobile communications. It is the use of frequency bands in the 24 GHz to 100 GHz range, known as millimeter wave (mmWave), that provide new challenges and benefits for 5G networks.  The main focus of this technology brief is the emergence of mmWave wireless as part of the 5G revolution. The available spectrum for mmWave, the supported bandwidths, and how antenna technologies work together to deliver multiple Gigabit data rates to end users are discussed. Finally, some deployment scenarios are considered where 5G mmWave networks will start to make an impact on everyday wireless communications.  The 5G mmWave Spectrum The incredible demand for wireless data bandwidth shows no sign of slowing down in the foreseeable future. At the same time, the mobile data experience for users continues to expand and develop, putting an increasing strain on network use of available wireless spectrum. With this projected growth in mind, the cellular industry looked to other frequency bands that could possibly be utilized in the development of new 5G wireless technologies. The high-frequency bands in the spectrum above 24 GHz were targeted as having the potential to support large bandwidths and high data rates, ideal for increasing the capacity of wireless networks. ...
+```
+This block of text, when read through is clearly a cohesive text rather than a jumble of terms.
+
+Finally, the end of the byte object reads like a menu would once again - this reasonably should be cleaned and taken out to leave the sweat, meaty core of actual informative text rather than SEO style menus.
+
+```
+...
+
+More about Technology and Carrier Access Virtualization of CPEs High-Efficiency Wi-Fi 6 (IEEE 802.11ax) Accton's Technology Capabilities Carrier Access Solutions from Accton More about Technology and Carrier Access Virtualization of CPEs High-Efficiency Wi-Fi 6 (IEEE 802.11ax) Accton's Technology Capabilities Carrier Access Solutions from Accton                Site Links  Press Room  Technology Briefs  About Us  Governance  Jobs  Contact Us       Latest Sales Reports    Accton Apr 2021 sales revenue report    Accton Mar 2021 sales revenue report    Accton Technology Reports Financial Result of 2020       FIND US   No.1, Creation 3rd Rd., Hsinchu Science Park, East Dist., Hsinchu City 30077, Taiwan  +886 35 770 270      Follow Us                       Copyright 2021 © Accton Technology Corporation . All Rights Reserved              Toggle Sliding Bar Area                  Latest Sales Reports    Accton Apr 2021 sales revenue report    Accton Mar 2021 sales revenue report    Accton Technology Reports Financial Result of 2020    MWC Shanghai 2021                       We use cookies to provide the best possible user experience for those who visit our website. By using this website you agree to the placement of cookies. For more details consult our privacy policy .  OK  
+```
+
+## Conclusion
 
 # References
 
