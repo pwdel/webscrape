@@ -18,6 +18,7 @@ def tagvisible(element):
 def textfromhtml(urlscrapes):
     # set empty text append list to return filled
     extractedtexts = []
+    extractedtitles = []
     # urlscrapes is a tuple and is accessed by: urlscrapes[0] = title, urlscrapes[1] = text
     # do this for all items in text list
     for counter in range(0,len(urlscrapes)):
@@ -32,6 +33,10 @@ def textfromhtml(urlscrapes):
         visibletexts = filter(tagvisible, foundtext)
         # append to extracted texts list
         extractedtexts.append(u" ".join(t.strip() for t in visibletexts))
+        # find title
+        title = soup.find('title')
+        # append title
+        extractedtitles.append(title.string)
 
     # return extractedtexts object
-    return(extractedtexts)
+    return(extractedtexts,extractedtitles)

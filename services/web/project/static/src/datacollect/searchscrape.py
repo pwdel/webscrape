@@ -8,6 +8,13 @@ import requests
 import urllib.request
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+"""Database models."""
+from project import db
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
+from sqlalchemy import Integer, ForeignKey, String, Column
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 # define search functionality for application
 # gives dictinary list of urls

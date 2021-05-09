@@ -1196,7 +1196,77 @@ def tag_visible(element):
     return True
 ```
 
+## Storing Scraped Web Data
+
+We have four key points of data needed to start off with to make the scraped web data useful:
+
+* articlename (title)
+* originalurl
+* rawtext
+* regexremoved
+
+```
+id | articlename | tags | originalurl | rawtext | regexremoved | timescraped | timepublished | created_on
+----+-------------+------+-------------+---------+--------------+-------------+---------------+------------
+(0 rows)
+
+```
+
+### Article Name
+
+The article name is something that may actually be able to be scraped from the byte object which gets produced from scrapeurlsbyteresult().  Within this byte result, there tends to be a title within the tags <title></title> - if not, we could replace that with a shortened portion of the URL or something similar.
+
+A new function should be created to extract the title from the byte object.
+
+The output of scrapeurlsbyteresult(search_results) is actually a list of byte objects.  For example, if we do:
+
+```
+html_byte = request.urlopen(url).read()
+
+we get...
+
+type(html_byte)
+>> bytes
+```
+
+This list can be accessed by y[counter].  The bytes objects can be decoded with .decode('utf8').
+
+From there, we can use bs(html, 'htmls.parser') and then soup.find('title') to extract the title, like so:
+
+Basically, we can add the following to our textfromhtml function:
+
+```
+...
+
+# find title
+title = soup.find('title')
+# append title
+extractedtitles.append(title.string)
+
+...
+
+# return extractedtexts object
+return(extractedtexts,extractedtitles)
+
+```
+However the function will now return a tuple, rather than a single object.  Hence, reading a tuple from a function will look like the following:
+
+```
+c,d = textfromhtml(b)
+```
+Where each item from c corresponds to each item from d.
+
+To store each title, we need to access the database, which we can create a seperate function for within our searchscrape.py and regclean.py files, since philosophically these are merely machine learning type server functions rather than forward-facing, "application" type functions that the user interacts with.
+
+Keeping a firewall between the functions may help with future debugging.
+
+So, to start off with, articlename can be stored as follows:
+
+
+
 ### Storing URLs
+
+
 
 ### Storing Titles
 
