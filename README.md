@@ -1256,13 +1256,18 @@ c,d = textfromhtml(b)
 ```
 Where each item from c corresponds to each item from d.
 
-To store each title, we need to access the database, which we can create a seperate function for within our searchscrape.py and regclean.py files, since philosophically these are merely machine learning type server functions rather than forward-facing, "application" type functions that the user interacts with.
+To store each title, we need to access the database, which we can create a separate function for within our searchscrape.py and regclean.py files, since philosophically these are merely machine learning type server functions rather than forward-facing, "application" type functions that the user interacts with.
 
 Keeping a firewall between the functions may help with future debugging.
 
-So, to start off with, articlename can be stored as follows:
+So, to start off with, article name can be stored as follows:
 
+1. Within searchscrape.py, import the data models:
 
+```
+# import Models
+from project.static.data.rawdata.articlemodels import Article, Collection
+```
 
 ### Storing URLs
 

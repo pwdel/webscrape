@@ -15,6 +15,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Integer, ForeignKey, String, Column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+# import Models
+from project.static.data.rawdata.articlemodels import Article, Collection
+
+
 
 # define search functionality for application
 # gives dictinary list of urls
