@@ -33,12 +33,12 @@ class Article(db.Model):
         nullable=True
     )
     rawtext = db.Column(
-        db.String(1000),
+        db.String(),
         unique=False,
         nullable=True
     )
     regexremoved = db.Column(
-        db.String(1000),
+        db.String(),
         unique=False,
         nullable=True
     )

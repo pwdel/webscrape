@@ -27,7 +27,8 @@ from project.static.src.evaluation.autodocwriter import autodocwrite
 from project.static.src.datacollect.searchscrape import searchterms, scrapeurlsbyteresult
 # import regex cleaning functionality modules
 from project.static.src.preprocessing.regexclean import textfromhtml, tagvisible
-
+# import write article capability
+from project.static.src.datastore.articlestore import writearticle
 
 # Blueprint Configuration
 # we define __name__ as the main blueprint, and the templates/static folder.
