@@ -1256,12 +1256,139 @@ c,d = textfromhtml(b)
 ```
 Where each item from c corresponds to each item from d.
 
-To store each title, we need to access the database, which we can create a seperate function for within our searchscrape.py and regclean.py files, since philosophically these are merely machine learning type server functions rather than forward-facing, "application" type functions that the user interacts with.
+To store each title, we need to access the database, which we can create a separate function for within our searchscrape.py and regclean.py files, since philosophically these are merely machine learning type server functions rather than forward-facing, "application" type functions that the user interacts with.
 
 Keeping a firewall between the functions may help with future debugging.
 
-So, to start off with, articlename can be stored as follows:
+So, to start off with, article name can be stored as follows:
 
+1. Within searchscrape.py, import the data models:
+
+```
+# import Models
+from project.static.data.rawdata.articlemodels import Article, Collection
+```
+
+2. Create a function which writes the originalurl to the specified article id (iterating through x number of search results)
+
+```
+# build data object and write to database
+def writearticleurl(extractedtitles,search_results,rawbytesobject,extractedtexts):
+    # # with input search_results being a dictionary list of a particular length/range
+    for counter in range(0,len(search_results)):
+        # grab each title
+        title = extractedtitles[counter]
+        # grab each URL
+        url = search_results[counter]
+        # grab each raw text
+        raw = rawbytesobject[counter]
+        # grab each regex cleaned text
+        cleantext = extractedtexts[counter]
+        # create new Article class instance
+        newarticle = Article(
+            articlename='demo title',
+            originalurl='demo url',
+            rawtext='demo raw text',
+            regexremoved='demo regex removed'
+            )
+        # add and commit new document
+        db.session.add(newarticle)
+        db.session.commit()
+```
+
+Keep in mind, the article above actually is planned to write to the entire article all at once, including all forms of data from raw to regex cleaned.  This is in an effort to make data writes more consistent, looping through entire objects within one go rather than having multiple seperate parallel loops.
+
+We likely may need some kind of validation or testing to ensure all of our input objects are of similar length.
+
+3. Write a, "Collections" relation.
+
+#### Testing to Ensure Data Works
+
+Run the following functions:
+
+```
+urls=searchterms("5G mmwave")
+raw=scrapeurlsbyteresult(urls)
+texts,titles=textfromhtml(raw)
+writearticle(titles,urls,raw,texts)
+```
+Then, check the database...
+
+```
+run:
+
+$ sudo docker exec -it db psql -d userlevels_flask_dev -U userlevels_flask
+
+Then run:
+
+select * from articles;
+
+```
+The first time running this, we get:
+
+```
+sqlalchemy.exc.DataError: (psycopg2.errors.StringDataRightTruncation) value too long for type character varying(1000)
+```
+
+This is simply because the original size of the string in the database was constrained at 1000 characters, which is obviously too short. We could make this limit infinite for now, but it's a good question how large this should be allowed to be - which has a lot of quality ramifications to it.
+
+The SQLAlchemy documentation mentions [here](https://docs.sqlalchemy.org/en/14/core/type_basics.html#sqlalchemy.types.String.params.length) that the stringfield character number can be left blank, however certain databases will return an error.
+
+> According to the Postgres character type documentation, text is variable unlimited length.
+And further down: ... PostgreSQL provides the text type, which stores strings of any length. However According to the Postgres Wiki, there is a hard limit of 1GB for a single column value, so the practical limit for the "unlimited" length text value is limited to 1GB by the architecture.
+
+[Postgres Wiki](https://wiki.postgresql.org/wiki/FAQ#What_is_the_maximum_size_for_a_row.2C_a_table.2C_and_a_database.3F)
+
+After writing, "an infinite number of characters" and then checking our fields:
+
+```
+userlevels_flask_dev=# select articlename from articles;
+                                articlename                                
+---------------------------------------------------------------------------
+ The Emergence of 5G mmWave – Accton Technology
+ 5G NR mmWave | Qualcomm
+ mmWave vs. Sub-6GHz 5G iPhones: What's the Difference? - MacRumors
+ Leveraging the potential of 5G millimeter wave - Ericsson
+ 5G - Wikipedia
+ What’s in the future of 5G millimeter wave? Qualcomm
+ Understanding Millimeter Wave Spectrum for 5G Networks - 5G Americas
+ Verizon’s 5G on mmWave is crushing it, but for how long? | FierceWireless
+```
+Original URLs
+
+```
+originalurl                                                   
+----------------------------------------------------------------------------------------------------------------
+https://www.accton.com/Technology-Brief/the-emergence-of-5g-mmwave/
+https://www.qualcomm.com/research/5g/5g-nr/mmwave
+https://www.macrumors.com/guide/mmwave-vs-sub-6ghz-5g/
+https://www.ericsson.com/en/reports-and-papers/further-insights/leveraging-the-potential-of-5g-millimeter-wave
+https://en.wikipedia.org/wiki/5G
+https://www.rcrwireless.com/20210204/5g/whats-in-the-future-of-5g-millimeter-wave
+https://www.5gamericas.org/understanding-millimeter-wave-spectrum-for-5g-networks/
+https://www.fiercewireless.com/5g/verizon-s-5g-mmwave-crushing-it-but-for-how-long
+(8 rows)
+```
+
+To look at one raw text value...we can run the following SQL commands, filtering for each requested id.
+
+```
+select rawtext from articles where id = 1;
+
+select regexremoved from articles where id = 1;
+
+```
+Inspecting the regexremoved for id=1, we see the following, which is an expected result:
+
+```
+Skip to content                 Core Competence Technology Briefs Why 5G Networks Need DCSG Routers The EBOF Solution for Hyperscale Data Centers The Benefits of Programmable Switch ASICs PAM4 Signal Integrity Virtualization of CPEs Wi-Fi Certified Agile Multiband™ BLE Beacons and --Location-Based Services The New World of 400 Gbps Ethernet Network Time Synchronization TIP and Accton’s Open Packet Transponder The Emergence of 5G mmWave vOLT Con--cepts Intel® DPDK Performance on the SAU5081I Server CORD Fundamentals with OpenStack High-Efficiency IEEE 802.11ax SD-WANs and WAN Optimization Coherent Optics for -Efficiency and Capacity R&D Capabilities Design and Development Technology Supply Chain Quality Manufacturing Solutions Cloud Data Center Solution Carrier Access Solution Campus Network Solution IoT Integration Solution SD-WAN Solution Investor Relations Letter to Shareholders Corporate Governance Annual Reports Monthly Earnings Summary Announcements Annual Meeting of Stockholders Stocks and Dividend Investor Services Press Careers Benefits and Well-being Career Development Join Accton Life @ Accton CSR Corporate Sustainability Report CSR Policies Environmental Progress Communication with Stakeholders About Accton Company Brief Accton Group Document Center Contact Us Privacy Policy...
+```
+
+
+### Keeping Data Consistent
+
+* In order to keep all of the data consistent, it might be best to actually create one cohesive data object which gets fed into a data writing function and then write from that object to the database.
+* However, to start off with, we can attempt to write individual functions and just keep track of the order in which they are called. If this gets to messy, then we can start over again and attempt to write entire data objects.
 
 
 ### Storing URLs

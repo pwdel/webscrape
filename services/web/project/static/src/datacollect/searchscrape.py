@@ -8,13 +8,6 @@ import requests
 import urllib.request
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
-"""Database models."""
-from project import db
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship
-from sqlalchemy import Integer, ForeignKey, String, Column
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
 # define search functionality for application
 # gives dictinary list of urls
@@ -33,8 +26,7 @@ def searchterms(search_term):
 def scrapeurlsbyteresult(search_results):
     # index search results
     # start empty list of titles and texts
-    textlist = []
-    titlelist = []
+    rawbytesobject = []
 
     # set user agent for urlopen
     hdr = {'User-Agent': 'Mozilla/5.0'}
@@ -55,7 +47,7 @@ def scrapeurlsbyteresult(search_results):
                 url_response = "Other Error"
 
         # find all text, append to list
-        textlist.append(url_response)
+        rawbytesobject.append(url_response)
 
     # return the title and text as bytes object
-    return(textlist)
+    return(rawbytesobject)
