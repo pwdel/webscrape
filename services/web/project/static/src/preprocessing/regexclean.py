@@ -31,12 +31,21 @@ def textfromhtml(urlscrapes):
         foundtext = soup.findAll(text=True)
         # filter visible text from foundtext
         visibletexts = filter(tagvisible, foundtext)
+        # regex substitute all alphabetical characters
+        regex_pattern = r'[^A-Za-z ]+' # <-- alpha characters only
+        # substituted texts, removing based upon regex pattern
+        substitute_output = re.sub(regex_pattern, '', visibletexts)
         # append to extracted texts list
-        extractedtexts.append(u" ".join(t.strip() for t in visibletexts))
+        extractedtexts.append(u" ".join(t.strip() for t in substitute_output))
+
         # find title
         title = soup.find('title')
-        # append title
-        extractedtitles.append(title.string)
+        try:
+            # append title
+            extractedtitles.append(title.string)
+        except:
+            # if erropr just append "Error"
+            extractedtitles.append("Title Error")
 
     # return extractedtexts object
     return(extractedtexts,extractedtitles)

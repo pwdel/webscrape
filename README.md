@@ -112,8 +112,8 @@ The output of searchterms is a list, as shown:
 That list can then be put into scrapeurlsbyteresult() to produce urlscrapes. Remember we have to import all functions by project structure (which we already did above).
 
 ```
->>> from project.static.src.datacollect.searchscrape import searchterms, scrapeurlsbyteresult
->>> urlscrapes = scrapeurlsbyteresult(search_results)
+from project.static.src.datacollect.searchscrape import searchterms, scrapeurlsbyteresult
+urlscrapes = scrapeurlsbyteresult(search_results)
 ```
 The output will be a list of text corresponding to each URL.
 
@@ -124,3 +124,119 @@ The output will be a list of text corresponding to each URL.
 The output, extractedtexts,extractedtitles are lists. However due to the highly irregular nature of web scraping, much work is still needed on textfromhtml() to make this work in a variety of situations, this work includes both error handling as well as regex work.
 
 ### Cleaning Up textfromhtml()
+
+The function is fundamentally a for loop:
+
+```
+for counter in range(0,len(urlscrapes)):
+		# grab the body of html text for a particular iteration
+		body = urlscrapes[counter]
+		# use the html parser to create a beautifulsoup object
+		# note in our previous raw data extraction we had not used html.parser
+		soup = BeautifulSoup(body, 'html.parser')
+		# find all text within the beautifulsoup object
+		foundtext = soup.findAll(text=True)
+		# filter visible text from foundtext
+		visibletexts = filter(tagvisible, foundtext)
+		# append to extracted texts list
+		extractedtexts.append(u" ".join(t.strip() for t in visibletexts))
+		# find title
+		title = soup.find('title')
+		# append title
+		extractedtitles.append(title.string)
+
+```
+
+Currently if there is no found text, there is a AttributeError: 'NoneType' object has no attribute 'string' error on:
+
+```
+extractedtitles.append(title.string)
+```
+Basically, no title is found from beautifulsoup, which means this should be a try/except clause with a default item to add in the case that nothing can be extracted for a given element.
+
+To solve this issue, we use try/except:
+
+```
+try:
+		# append title
+		extractedtitles.append(title.string)
+except:
+		extractedtitles.append("Title Error")
+```
+
+However, note that even with this fix we still get the following:
+
+> Some characters could not be decoded, and were replaced with REPLACEMENT CHARACTER.
+
+For the titles we have the following list (new line added for each element for visibility):
+
+```
+[
+'Also sprach Zarathustra - Wikipedia',
+'Amazon.com: Thus Spake Zarathustra (Dover Thrift Editions) (9780486406633): Friedrich Nietzsche, Thomas Common: Books', 'Thus Spoke Zarathustra: A Book for All and None (Modern Library (Hardcover)): Nietzsche, Friedrich, Kaufmann, Walter: 9780679601753: Amazon.com: Books',
+'Thus Spoke Zarathustra by Friedrich Nietzsche',
+'\r\n      Thus Spake Zarathustra, by Friedrich Nietzsche\r\n    ',
+'Thus Spake Zarathustra | treatise by Nietzsche | Britannica', 'Thus Spoke Zarathustra by Friedrich Nietzsche: 9780679601753 | PenguinRandomHouse.com: Books',
+'Error',
+'Thus Spake Zarathustra: a book for all and none - Friedrich Wilhelm Nietzsche - Google Books'
+]
+```
+However for the variable, "extractedtexts" we get a lot of symbols which are not text.  This is where an actual functioning regex would come in handy.
+
+```
+# grab the body of html text for a particular iteration
+body = urlscrapes[counter]
+# use the html parser to create a beautifulsoup object
+# note in our previous raw data extraction we had not used html.parser
+soup = BeautifulSoup(body, 'html.parser')
+# find all text within the beautifulsoup object
+foundtext = soup.findAll(text=True)
+# filter visible text from foundtext
+visibletexts = filter(tagvisible, foundtext)
+# regex substitute all alphabetical characters
+regex_pattern = r'[^A-Za-z ]+' # <-- alpha characters only
+# substituted texts, removing based upon regex pattern
+substitute_output = re.sub(regex_pattern, '', visibletexts)
+# append to extracted texts list
+extractedtexts.append(u" ".join(t.strip() for t in substitute_output))
+
+```
+
+The key regex we used here, which appears to clean up a lot, but not everything is:
+
+```
+regex_pattern = r'[^A-Za-z ]+' # <-- alpha characters only
+```
+
+This pattern, when combined with re.sub, finds all non-alphabetical characters in visibletexts and turns them into nothing, or ''.
+
+Side note - one problem with building this, is that re-building any static code requires completely stopping and re-starting flask, and subsequently importing any functions we re-built.
+
+Currently, our import tasks are:
+
+```
+from project.static.src.datacollect.searchscrape import searchterms, scrapeurlsbyteresult
+from project.static.src.preprocessing.regexclean import textfromhtml, tagvisible
+```
+
+While the commands we need to run to test this out are:
+
+```
+searchstring = "thus spoke zarathustra"
+search_results = searchterms(searchstring)
+urlscrapes = scrapeurlsbyteresult(search_results)
+extractedtexts,extractedtitles = textfromhtml(urlscrapes)
+```
+Upon attempting this after adding in the regex expression above we get the following error:
+
+```
+extractedtexts,extractedtitles = textfromhtml(urlscrapes)
+Traceback (most recent call last):
+  File "<console>", line 1, in <module>
+  File "/usr/src/theapp/project/static/src/preprocessing/regexclean.py", line 37, in textfromhtml
+    substitute_output = re.sub(regex_pattern, '', visibletexts)
+  File "/usr/local/lib/python3.8/re.py", line 210, in sub
+    return _compile(pattern, flags).sub(repl, string, count)
+TypeError: expected string or bytes-like object
+```
+Basically, the output of foundtext and filter (visibletext) is likely a filter object, rather than a string, which the regex cleaner is looking for.
