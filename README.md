@@ -280,4 +280,12 @@ extractedtexts
 []
 ```
 
-Basically, the extractedtexts is now empty.
+Basically, the extractedtexts is now empty. What's going on here? It would be helpful to be able to see each step on the console in real-time.
+
+Printing to the console can be achieved by:
+
+```
+import sys
+# print to console
+print('whatever', file=sys.stderr)
+```
