@@ -1,5 +1,7 @@
 # regex removal
 import re
+# sys for console print tools
+import sys
 # BeautifulSoup
 from bs4 import BeautifulSoup
 from bs4.element import Comment
@@ -32,6 +34,8 @@ def textfromhtml(urlscrapes):
         # filter visible text from foundtext
         visibletexts = list(filter(tagvisible, foundtext))
 
+        # print to console
+        print('visibletexts @',counter,' : ',visibletexts[:200], file=sys.stderr)
 
         # regex substitute all alphabetical characters
         regex_pattern = r'[^A-Za-z ]+' # <-- alpha characters only
@@ -40,16 +44,16 @@ def textfromhtml(urlscrapes):
         if len(visibletexts) == 0:
             # then do regex substitution on the original foundtext prior to filtering
             substitute_output = re.sub(regex_pattern, '', foundtext[0])
-            print(foundtext[0])
-            pass
+            # print current substitute output
         # if the filter worked and there is still some values left
         elif len(visibletexts) == 1:
             # then do regex on the list item
             substitute_output = re.sub(regex_pattern, '', visibletexts[0])
-            print(visibletexts[0])
-            pass
         else:
             substitute_output = "Does not fit visible text requirement for unknown reason."
+
+        # append to extracted texts
+        extractedtexts.append(substitute_output)
 
         # find title
         title = soup.find('title')
