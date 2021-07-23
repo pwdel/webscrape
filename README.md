@@ -289,3 +289,44 @@ import sys
 # print to console
 print('whatever', file=sys.stderr)
 ```
+Beyond this, the extracted texts were not even populating into the list because there was no assignment after the regex operation. To fix this, the following was added:
+
+```
+# append to extracted texts
+extractedtexts.append(substitute_output)
+```
+However, even with this fix, we get the following extractedtexts output, basically everything went to the, "else" statement.
+
+```
+['Does not fit visible text requirement for unknown reason.', 'Does not fit visible text requirement for unknown reason.', 'Does not fit visible text requirement for unknown reason.', 'Does not fit visible text requirement for unknown reason.', 'Does not fit visible text requirement for unknown reason.', 'Does not fit visible text requirement for unknown reason.', 'Does not fit visible text requirement for unknown reason.', 'Does not fit visible text requirement for unknown reason.', 'Does not fit visible text requirement for unknown reason.']
+```
+
+Breaking down our logic further:
+
+##### elif Clause
+
+```
+elif len(visibletexts) == 1:
+		# then do regex on the list item
+		substitute_output = re.sub(regex_pattern, '', visibletexts[0])
+```
+The command above looks for the length of a list = 1 only, meaning if there are many items in the list, it won't catch. This should be changed to:
+
+```
+elif len(visibletexts) >= 1:
+```
+
+Then, the regex pattern must be done on the entire visibletexts list, meaning that the entire string must be joined with spaces, and a regex performed on that string. This should be done within an if statement, if the visibletexts list is greater than 1 in length, the items should be joined, otherwise leave it alone.
+
+```
+# if there is more than one visibletexts item
+if len(visibletexts) > 1:
+	# join with spaces
+	visibletextsjoined = " ".join(visibletexts)
+else:
+	# leave alone
+	visibletextsjoined = visibletexts
+
+```
+
+Then, the regex pattern can be done straight on visibletexts.

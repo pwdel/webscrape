@@ -49,8 +49,6 @@ def textfromhtml(urlscrapes):
         elif len(visibletexts) == 1:
             # then do regex on the list item
             substitute_output = re.sub(regex_pattern, '', visibletexts[0])
-            print(visibletexts[0])
-            pass
         else:
             substitute_output = "Does not fit visible text requirement for unknown reason."
 
