@@ -239,4 +239,45 @@ Traceback (most recent call last):
     return _compile(pattern, flags).sub(repl, string, count)
 TypeError: expected string or bytes-like object
 ```
-Basically, the output of foundtext and filter (visibletext) is likely a filter object, rather than a string, which the regex cleaner is looking for.
+Basically, the output of foundtext and filter (visibletext) is likely a filter object, rather than a string, which the regex cleaner is looking for.  Moreover, there are different cases of text that we might encounter from the web. The below code is an attempt to account for two cases:
+
+```
+# regex substitute all alphabetical characters
+regex_pattern = r'[^A-Za-z ]+' # <-- alpha characters only
+
+# if the filter took out all text due to no tags being present at all
+if len(visibletexts) == 0:
+    # then do regex substitution on the original foundtext prior to filtering
+    substitute_output = re.sub(regex_pattern, '', foundtext[0])    
+    print(foundtext[0])
+    pass
+# if the filter worked and there is still some values left
+elif len(visibletexts) == 1:
+    # then do regex on the list item
+    substitute_output = re.sub(regex_pattern, '', visibletexts[0])
+    print(visibletexts[0])
+    pass
+else:
+    substitute_output = "Does not fit visible text requirement for unknown reason."
+
+```
+
+Further testing may be needed to identify more cases and sleuth how to more efficiently scrape from the web. The following private Colab notebook has been set up to run experiments:
+
+[Colab on Webscrape Regex](https://colab.research.google.com/drive/1BMUqBCTWU9v3UVYcEu6_H6nNkajSwmyB#scrollTo=qxFO8x8cavVw)
+
+After testing the above in our dev environment, we get another error:
+
+```
+TypeError: object of type 'filter' has no len()
+```
+This is simply because we had to add list(filter()) on the filter function to convert the object into a list.
+
+After running this new code, we get:
+
+```
+extractedtexts
+[]
+```
+
+Basically, the extractedtexts is now empty.
