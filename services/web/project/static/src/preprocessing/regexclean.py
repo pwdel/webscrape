@@ -31,11 +31,21 @@ def textfromhtml(urlscrapes):
         soup = BeautifulSoup(body, 'html.parser')
         # find all text within the beautifulsoup object
         foundtext = soup.findAll(text=True)
+
+        # print foundtext to console, control for length
+        if len(foundtext) > 200:
+            print('foundtext @',counter,' : ',foundtext[0:10], file=sys.stderr) # <-- uncomment to see in console
+        else:
+            print('foundtext @',counter,' : ',foundtext, file=sys.stderr) # <-- uncomment to see in console
+
         # filter visible text from foundtext
         visibletexts = list(filter(tagvisible, foundtext))
 
-        # print to console
-        print('visibletexts @',counter,' : ',visibletexts[:200], file=sys.stderr)
+        # print visibletext to console, control for length
+        if len(visibletexts) > 200:
+            print('visibletexts @',counter,' : ',visibletexts[:10], file=sys.stderr) # <-- uncomment to see in console
+        else:
+            print('visibletexts @',counter,' : ',visibletexts, file=sys.stderr) # <-- uncomment to see in console
 
         # regex substitute all alphabetical characters
         regex_pattern = r'[^A-Za-z ]+' # <-- alpha characters only
@@ -45,10 +55,24 @@ def textfromhtml(urlscrapes):
             # then do regex substitution on the original foundtext prior to filtering
             substitute_output = re.sub(regex_pattern, '', foundtext[0])
             # print current substitute output
+            print('No visible text found. Substituting foundtext at index 0.', file=sys.stderr) # <-- uncomment to see in console
+
         # if the filter worked and there is still some values left
-        elif len(visibletexts) == 1:
-            # then do regex on the list item
-            substitute_output = re.sub(regex_pattern, '', visibletexts[0])
+        elif len(visibletexts) >= 1:
+            # if there is more than one visibletexts item
+            if len(visibletexts) > 1:
+                # join with spaces
+                visibletextsjoined = " ".join(visibletexts)
+                # print status to console
+                print('len(visibletexts) >1, joining into string with spaces.', file=sys.stderr) # <-- uncomment to see in console
+            else:
+                # leave alone, grab first item
+                visibletextsjoined = visibletexts[0]
+                # print status to console
+                print('len(visibletexts) == 1, using first index.', file=sys.stderr) # <-- uncomment to see in console
+
+            # then do regex on joined item
+            substitute_output = re.sub(regex_pattern, '', visibletextsjoined)
         else:
             substitute_output = "Does not fit visible text requirement for unknown reason."
 
