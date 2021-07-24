@@ -325,8 +325,33 @@ if len(visibletexts) > 1:
 	visibletextsjoined = " ".join(visibletexts)
 else:
 	# leave alone
-	visibletextsjoined = visibletexts
+	visibletextsjoined = visibletexts[0]
 
 ```
 
-Then, the regex pattern can be done straight on visibletexts.
+Then, the regex pattern can be done straight on visibletextsjoined.
+
+However, when we run the above we get a TypeError.
+
+```
+File "/usr/src/theapp/project/static/src/preprocessing/regexclean.py", line 68, in textfromhtml
+	substitute_output = re.sub(regex_pattern, '', visibletexts)
+...
+TypeError: expected string or bytes-like object
+```
+This is because we used, "visibletexts" rather than the cleaned version:
+
+```
+substitute_output = re.sub(regex_pattern, '', visibletextsjoined)
+```
+After the above changes are made to the regex pattern and rules are given, the app is able to more or less extract texts from pages and eliminate characters.
+
+#### End Result of Cleaning Up textfromhtml()
+
+However, it is not able to identify the quality of the text, this, textfromhtml() function does just that - eliminates symbols and moves the extracted text to the next level, where it can be further cleaned according to some other existing rules, or put into a database.
+
+#### Types of Cleaning Not Included
+
+* Text Origin Type: literally any body of text could be scraped from the web, whether it be user comments, original literary works themselves, blog articles, reviews, reports, commercial advertisements, and more.
+* Voice: there is absolutely no modification for voice or tone, no smoothing out of any text or even attempt to find similar works.
+* Substance: dealing with substance may be beyond the realm of text generation itself and indeed may be its own field, perhaps, "text substance injection."  Substance and truth of statements are not a part of text generation in 2021 (at the time of authoring this document), under the surface it's more about statistical analysis.
